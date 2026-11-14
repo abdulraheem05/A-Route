@@ -1,6 +1,13 @@
 'use client';
-// Sol selector. The rover is shown at its last recorded drive-end position at
-// or before the chosen sol; positions are never interpolated between records.
+// Mission timeline.
+//
+// One compact row: which sol you are looking at, step controls, the scrub bar
+// with a few mission markers, and a short rover status. The drive-end detail
+// that used to occupy a quarter of the bar is now a tooltip on the sol block.
+//
+// Selection logic is unchanged: the rover is shown at its last recorded
+// drive-end position at or before the chosen sol, and positions are never
+// interpolated between records.
 import { useMemo } from 'react';
 import { SOL_LANDMARKS, waypointIndexAtSol } from '@/lib/data/landmarks';
 import { cameraApi } from '@/lib/terrain/cameraApi';
@@ -23,10 +30,18 @@ export default function SolTimeline() {
   );
 
   if (status === 'loading') {
-    return <div className="px-4 py-3 text-xs text-slate-500">Loading Curiosity’s traverse from NASA…</div>;
+    return (
+      <div className="sol-timeline flex items-center px-3">
+        <span className="label animate-soft-pulse">Loading Curiosity&rsquo;s traverse from NASA</span>
+      </div>
+    );
   }
   if (!range) {
-    return <div className="px-4 py-3 text-xs text-slate-500">Rover data unavailable — the timeline is disabled.</div>;
+    return (
+      <div className="sol-timeline flex items-center px-3">
+        <span className="label">Rover data unavailable — timeline disabled</span>
+      </div>
+    );
   }
 
   const [minSol, maxSol] = range;
@@ -46,26 +61,47 @@ export default function SolTimeline() {
     setSol(waypoints[i].sol);
   };
 
+  const driven = wp && wp.distTotalM !== null ? `${(wp.distTotalM / 1000).toFixed(2)} km` : null;
+  const detail = wp
+    ? `Drive end · sol ${wp.sol}${wp.sol !== sol ? ' (no drive recorded since)' : ''}${
+        driven ? ` · ${driven} driven` : ''
+      }${wp.elev !== null ? ` · ${wp.elev.toFixed(0)} m` : ''}`
+    : 'Before the first record';
+
   return (
-    <div className="flex items-center gap-4 px-4 py-2.5">
-      <div className="w-40 shrink-0">
-        <div className="label">Mission sol</div>
-        <div className="flex items-baseline gap-2">
-          <span className="num text-xl leading-none text-slate-50">{sol}</span>
-          <span className="num text-[11px] text-slate-500">of {maxSol}</span>
-        </div>
+    <div className="sol-timeline flex items-center gap-3 px-3">
+      <div className="tip tip-above flex shrink-0 items-baseline gap-1.5" data-tip={detail}>
+        <span className="label">Sol</span>
+        <span className="num text-[15px] leading-none text-slate-50">{sol ?? maxSol}</span>
+        <span className="num text-[10px] text-slate-600">/ {maxSol}</span>
       </div>
 
-      <div className="flex shrink-0 gap-1">
-        <button type="button" className="btn h-7 w-7 p-0" onClick={() => step(-1)} title="Previous drive">
-          ‹
+      <div className="flex shrink-0 items-center">
+        <button
+          type="button"
+          className="gale-icon-btn tip tip-above"
+          data-tip="Previous drive"
+          onClick={() => step(-1)}
+          aria-label="Previous drive"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M7.5 2 L3.5 6 L7.5 10" />
+          </svg>
         </button>
-        <button type="button" className="btn h-7 w-7 p-0" onClick={() => step(1)} title="Next drive">
-          ›
+        <button
+          type="button"
+          className="gale-icon-btn tip tip-above"
+          data-tip="Next drive"
+          onClick={() => step(1)}
+          aria-label="Next drive"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M4.5 2 L8.5 6 L4.5 10" />
+          </svg>
         </button>
       </div>
 
-      <div className="relative flex-1 pb-3 pt-1">
+      <div className="relative flex-1">
         <input
           type="range"
           min={minSol}
@@ -73,43 +109,31 @@ export default function SolTimeline() {
           step={1}
           value={sol ?? maxSol}
           onChange={(e) => setSol(parseInt(e.target.value, 10))}
-          className="w-full"
           aria-label="Mission sol"
         />
-        <div className="pointer-events-none absolute inset-x-[6px] top-4 h-3">
+        {/* Mission milestones, clickable. */}
+        <div className="pointer-events-none absolute inset-x-[6px] top-[15px] h-2">
           {marks.map((m) => (
             <button
               key={m.id}
               type="button"
-              title={`${m.name} · sol ${m.sol}`}
+              className="tip tip-above pointer-events-auto absolute h-1.5 w-[3px] -translate-x-1/2 rounded-sm transition-colors"
+              style={{ left: `${pct(m.sol)}%`, background: 'rgba(233,196,106,0.6)' }}
+              data-tip={`${m.name} · sol ${m.sol}`}
               onClick={() => setSol(m.sol)}
-              className="pointer-events-auto absolute h-2 w-[3px] -translate-x-1/2 rounded-sm bg-interpreted/70 hover:bg-interpreted"
-              style={{ left: `${pct(m.sol)}%` }}
+              aria-label={`Go to ${m.name}, sol ${m.sol}`}
             />
           ))}
         </div>
       </div>
 
-      <div className="hidden w-64 shrink-0 text-right text-[11px] leading-snug text-slate-400 xl:block">
-        {wp ? (
-          <>
-            <div>
-              Last drive end: sol <span className="num text-slate-200">{wp.sol}</span>
-              {wp.sol !== sol ? ' (no drive recorded since)' : ''}
-            </div>
-            <div className="num">
-              {wp.distTotalM !== null ? `${(wp.distTotalM / 1000).toFixed(2)} km driven` : ''}
-              {wp.elev !== null ? ` · ${wp.elev.toFixed(0)} m` : ''}
-            </div>
-          </>
-        ) : (
-          <div>Before the first record</div>
-        )}
-      </div>
+      {driven && (
+        <span className="num hidden shrink-0 text-[10.5px] text-slate-500 lg:inline">{driven} driven</span>
+      )}
 
       <button
         type="button"
-        className="btn btn-accent shrink-0"
+        className="btn shrink-0"
         disabled={!wp}
         onClick={() => {
           if (!wp) return;

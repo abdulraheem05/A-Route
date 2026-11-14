@@ -1,35 +1,166 @@
 'use client';
-// Scientific information panel: what is at the selected place, with the source
-// and evidence class of every value.
+// Contextual inspector.
+//
+// Three stacked sections — INSPECT, WEATHER, GEOLOGY — each a collapsed box
+// that opens only when its chevron is clicked, so at most one body of text is
+// ever on screen. Which one is open is the existing `infoTab` state, so
+// selecting something on the map still opens Inspect automatically.
+//
+// Everything a value needs in order to be read honestly travels with it: the
+// dataset it came from and whether it is measured, derived, interpreted or
+// simulated. Long-form provenance now lives in disclosures instead of being
+// printed by default. Measurement has moved out of this panel entirely and
+// into a floating card (components/Explorer.jsx).
 import { useMemo } from 'react';
+import { BRADBURY } from '@/lib/mars/constants';
 import { FIXED_LANDMARKS, NAME_CLASS, resolveLandmarks, waypointIndexAtSol } from '@/lib/data/landmarks';
 import { nearestWaypoint } from '@/lib/data/roverAdapter';
 import { STRAT_UNITS, UNIT_NOTE } from '@/lib/data/units';
-import { formatLat, formatLon, greatCircleMeters, inBounds } from '@/lib/coordinates/projection';
+import { formatLat, formatLon, inBounds } from '@/lib/coordinates/projection';
 import { heightProvider } from '@/lib/terrain/heightProvider';
 import { cameraApi } from '@/lib/terrain/cameraApi';
 import { useStore } from '@/store/useStore';
-import ProfileChart from '@/components/panels/ProfileChart';
 import WeatherPanel from '@/components/panels/WeatherPanel';
-import { DatasetLink, EvidenceBadge, Row, Section, fmt } from '@/components/panels/ui';
+import { DatasetLink, EvidenceBadge, fmt } from '@/components/panels/ui';
 
 const dist = (m) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${m.toFixed(0)} m`);
+
+function Icon({ name, size = 14 }) {
+  const p = {
+    width: size,
+    height: size,
+    viewBox: '0 0 16 16',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.35,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+  };
+  switch (name) {
+    case 'inspect':
+      return (
+        <svg {...p}>
+          <circle cx="7.2" cy="7.2" r="4.4" />
+          <path d="M10.4 10.4 L14 14" />
+        </svg>
+      );
+    case 'weather':
+      return (
+        <svg {...p}>
+          <path d="M4.6 11.5 a2.7 2.7 0 0 1 .3-5.4 3.7 3.7 0 0 1 7 .9 2.4 2.4 0 0 1-.4 4.5Z" />
+          <path d="M5.5 14 h5" opacity="0.55" />
+        </svg>
+      );
+    case 'geology':
+      return (
+        <svg {...p}>
+          <path d="M2 5 H14 M2 8 H14 M2 11 H14" />
+          <path d="M2 2.6 H14" opacity="0.5" />
+        </svg>
+      );
+    case 'rover':
+      return (
+        <svg {...p}>
+          <rect x="3.5" y="5.5" width="9" height="4" rx="0.8" />
+          <circle cx="4.5" cy="11.5" r="1.3" />
+          <circle cx="8" cy="11.5" r="1.3" />
+          <circle cx="11.5" cy="11.5" r="1.3" />
+          <path d="M9 5.5 V3 h2.5" />
+        </svg>
+      );
+    case 'crater':
+      return (
+        <svg {...p}>
+          <circle cx="8" cy="8" r="5.6" />
+          <circle cx="8" cy="8" r="1.5" />
+        </svg>
+      );
+    case 'ruler':
+      return (
+        <svg {...p}>
+          <path d="M2 12 L12 2 L14 4 L4 14 Z M5 9 l1.2 1.2 M7 7 l1.2 1.2 M9 5 l1.2 1.2" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function Chevron({ open }) {
+  return (
+    <span className="chev" data-open={open ? 'true' : 'false'}>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <path d="M3.5 1.5 L7 5 L3.5 8.5" />
+      </svg>
+    </span>
+  );
+}
+
+/** One of the three stacked boxes. */
+function Acc({ id, icon, title, hint, open, onToggle, children }) {
+  return (
+    <section className="acc panel pointer-events-auto" data-open={open ? 'true' : 'false'}>
+      <button
+        type="button"
+        className="acc-head"
+        onClick={() => onToggle(id)}
+        aria-expanded={open}
+        aria-controls={`acc-${id}`}
+      >
+        <span style={{ color: open ? 'var(--g-accent)' : 'var(--g-text-faint)' }}>
+          <Icon name={icon} />
+        </span>
+        <span className="acc-title">{title}</span>
+        {!open && hint && <span className="acc-hint">{hint}</span>}
+        <Chevron open={open} />
+      </button>
+      {open && (
+        <div className="acc-body thin-scroll" id={`acc-${id}`}>
+          {children}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function K({ label, children }) {
+  return (
+    <div className="kv">
+      <span>{label}</span>
+      <span>{children}</span>
+    </div>
+  );
+}
+
+function Block({ title, right, children }) {
+  return (
+    <div className="border-t px-2.5 py-2.5 first:border-t-0" style={{ borderColor: 'var(--g-line-soft)' }}>
+      {(title || right) && (
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <span className="label">{title}</span>
+          {right}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}
 
 function Coordinates({ lon, lat }) {
   return (
     <>
-      <Row label="Latitude">
+      <K label="Latitude">
         <span className="num">{formatLat(lat, 5)}</span>
-      </Row>
-      <Row label="Longitude">
+      </K>
+      <K label="Longitude">
         <span className="num">{formatLon(lon, 5)}</span>
-      </Row>
+      </K>
     </>
   );
 }
 
-function TerrainAt({ lon, lat }) {
-  // Re-evaluate when terrain or detail tiles change.
+/** Elevation and slope under a position — unchanged sampling logic. */
+function TerrainAt({ lon, lat, compact }) {
   const terrainVersion = useStore((s) => s.terrainVersion);
   const patch = useStore((s) => s.patch);
   const info = useMemo(
@@ -37,42 +168,50 @@ function TerrainAt({ lon, lat }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lon, lat, terrainVersion, patch]
   );
+
   if (!info.sample) {
-    return (
-      <p className="text-[11px] leading-snug text-slate-500">
-        No elevation dataset is loaded at this point. Nothing is estimated in its place.
-      </p>
-    );
+    return <p className="note">No elevation dataset covers this point. Nothing is estimated in its place.</p>;
   }
+
   return (
     <>
-      <Row label="Elevation">
+      <K label="Elevation">
         <span className="num">{info.sample.h.toFixed(1)} m</span> <DatasetLink id={info.sample.datasetId} />
-      </Row>
-      <Row label="Elevation grid">
-        <span className="num">{info.sample.resM.toFixed(info.sample.resM < 10 ? 1 : 0)} m</span>
-      </Row>
+      </K>
       {info.slope ? (
-        <>
-          <Row label="Slope">
-            <span className="num">{info.slope.deg.toFixed(1)}°</span>
-            <span className="text-slate-500"> over {info.slope.baselineM.toFixed(0)} m</span>
-          </Row>
-          <Row label="Faces (downslope)">
-            <span className="num">{info.slope.aspect.toFixed(0)}°</span>
-            <span className="text-slate-500"> from north</span>
-          </Row>
-        </>
+        <K label="Steepness">
+          <span className="num">{info.slope.deg.toFixed(1)}°</span>
+        </K>
       ) : (
-        <Row label="Slope">
-          <span className="text-slate-500">not available here</span>
-        </Row>
+        <K label="Steepness">
+          <span className="text-slate-500">not available</span>
+        </K>
       )}
-      {info.sample.datasetId === 'D01' && (
-        <p className="mt-1 text-[11px] leading-snug text-interpreted">
-          Inside the 1 m mosaic the true source resolution at any point is unknown (1 m to more than 100 m), so fine
-          slope values are conditional.
-        </p>
+      {!compact && (
+        <details className="science-details mt-1.5">
+          <summary>How this was measured</summary>
+          <div>
+            <K label="Elevation grid">
+              <span className="num">{info.sample.resM.toFixed(info.sample.resM < 10 ? 1 : 0)} m</span>
+            </K>
+            {info.slope && (
+              <>
+                <K label="Slope baseline">
+                  <span className="num">{info.slope.baselineM.toFixed(0)} m</span>
+                </K>
+                <K label="Faces (downslope)">
+                  <span className="num">{info.slope.aspect.toFixed(0)}°</span> from north
+                </K>
+              </>
+            )}
+            {info.sample.datasetId === 'D01' && (
+              <p className="note mt-1 text-interpreted">
+                Inside the 1 m mosaic the true source resolution at any point is unknown (1 m to more than 100 m), so
+                fine slope values are conditional.
+              </p>
+            )}
+          </div>
+        </details>
       )}
     </>
   );
@@ -84,44 +223,57 @@ function NearRover({ lon, lat }) {
   if (!near) return null;
   const w = waypoints[near.index];
   return (
-    <Row label="Nearest rover stop">
+    <K label="Nearest rover stop">
       <span className="num">{dist(near.distanceM)}</span>
       <span className="text-slate-500"> · sol {w.sol}</span>
-    </Row>
+    </K>
   );
 }
 
-function PointDetails({ sel }) {
+/* ---------------------------------------------------------------- cards -- */
+
+function PointCard({ sel }) {
   const containing = FIXED_LANDMARKS.filter((l) => l.bounds && inBounds(l.bounds, sel.lon, sel.lat));
   return (
     <>
-      <Section title="Selected point">
-        <Coordinates lon={sel.lon} lat={sel.lat} />
-        <NearRover lon={sel.lon} lat={sel.lat} />
-        {containing.length > 0 && (
-          <Row label="Within (IAU extent)">{containing.map((l) => l.name).join(', ')}</Row>
-        )}
-      </Section>
-      <Section title="Terrain" right={<EvidenceBadge kind="Derived" />}>
+      <Block>
+        <div className="mb-1.5 flex items-start justify-between gap-2">
+          <div>
+            <h2 className="text-[13px] font-medium text-slate-50">Terrain point</h2>
+            <p className="note">A place you picked on the surface.</p>
+          </div>
+          <EvidenceBadge kind="Derived" />
+        </div>
         <TerrainAt lon={sel.lon} lat={sel.lat} />
-      </Section>
-      <Section title="Composition and geology">
-        <p className="text-[11px] leading-snug text-slate-500">
-          No mineral or geological-unit layer is loaded, so nothing is reported for this point. See “Not yet available”
-          in the layers panel.
-        </p>
-      </Section>
-      <Section title="Atmosphere">
-        <p className="text-[11px] leading-snug text-slate-500">
-          No weather has been measured at this point. Measurements exist only where the rover was — see the Weather
-          tab. Modelled conditions are not integrated yet.
-        </p>
-      </Section>
+        <NearRover lon={sel.lon} lat={sel.lat} />
+        {containing.length > 0 && <K label="Inside">{containing.map((l) => l.name).join(', ')}</K>}
+      </Block>
+
+      <Block>
+        <details className="science-details">
+          <summary>Coordinates</summary>
+          <div>
+            <Coordinates lon={sel.lon} lat={sel.lat} />
+          </div>
+        </details>
+        <details className="science-details mt-1.5">
+          <summary>Rock and air at this point</summary>
+          <div className="note space-y-1.5">
+            <p>
+              No mineral or geological-unit layer is loaded, so no composition is reported here. See Geology below for
+              what is known in writing.
+            </p>
+            <p>
+              Weather has only ever been measured where the rover has been, so there is no reading for this point.
+            </p>
+          </div>
+        </details>
+      </Block>
     </>
   );
 }
 
-function WaypointDetails({ sel }) {
+function WaypointCard({ sel }) {
   const waypoints = useStore((s) => s.rover.waypoints);
   const weather = useStore((s) => s.weather);
   const w = waypoints[sel.index];
@@ -131,328 +283,361 @@ function WaypointDetails({ sel }) {
   );
   if (!w) return null;
   const obs = weather.bySol.get(w.sol);
+
   return (
     <>
-      <Section title={`Waypoint · sol ${w.sol}`} right={<EvidenceBadge kind="Derived" />}>
-        <Row label="Record">
-          <span className="num">RMC {w.rmc}</span> <DatasetLink id="D12" />
-        </Row>
-        <Coordinates lon={w.lon} lat={w.lat} />
-        <Row label="Elevation (NASA file)">
-          <span className="num">{fmt(w.elev, 1, ' m')}</span>
-        </Row>
-        <Row label="Odometry">
+      <Block>
+        <div className="mb-1.5 flex items-start justify-between gap-2">
+          <div>
+            <h2 className="text-[13px] font-medium text-slate-50">Drive end · sol {w.sol}</h2>
+            <p className="note">Where Curiosity stopped at the end of this drive.</p>
+          </div>
+          <EvidenceBadge kind="Derived" />
+        </div>
+        <K label="Driven in total">
           <span className="num">{w.distTotalM !== null ? dist(w.distTotalM) : '—'}</span>
-        </Row>
-        <Row label="This drive">
+        </K>
+        <K label="This drive">
           <span className="num">{w.distM !== null ? `${w.distM.toFixed(1)} m` : '—'}</span>
           {w.driveType ? <span className="text-slate-500"> · {w.driveType}</span> : null}
-        </Row>
-        <Row label="Tilt / pitch / roll">
-          <span className="num">
-            {fmt(w.tilt, 1, '°')} / {fmt(w.pitch, 1, '°')} / {fmt(w.roll, 1, '°')}
-          </span>
-        </Row>
-        <Row label="Heading (yaw)">
-          <span className="num">{fmt(w.yaw, 1, '°')}</span>
-        </Row>
-        <p className="mt-1 text-[11px] leading-snug text-slate-500">
-          End-of-drive position. Where the rover was between drive ends is not in the public file.
-        </p>
-      </Section>
-      {sites.length > 0 && (
-        <Section title="At this stop">
-          <ul className="space-y-1 text-xs text-slate-200">
-            {sites.map((l) => (
-              <li key={l.id}>{l.name}</li>
-            ))}
-          </ul>
-        </Section>
-      )}
-      <Section title="MarsWalk terrain here" right={<EvidenceBadge kind="Derived" />}>
-        <TerrainAt lon={w.lon} lat={w.lat} />
-        <p className="mt-1 text-[11px] leading-snug text-slate-500">
-          Any difference from the NASA file’s elevation shows how well the terrain data and the rover data line up.
-        </p>
-      </Section>
-      <Section title="Weather that sol" right={obs ? <EvidenceBadge kind="Measured" /> : null}>
+        </K>
+        <K label="Elevation">
+          <span className="num">{fmt(w.elev, 1, ' m')}</span> <DatasetLink id="D12" />
+        </K>
+        {sites.length > 0 && <K label="At this stop">{sites.map((l) => l.name).join(', ')}</K>}
+      </Block>
+
+      <Block title="Weather that sol" right={obs ? <EvidenceBadge kind="Measured" /> : null}>
         {obs ? (
           <>
-            <Row label="Air temperature">
-              <span className="num">{fmt(obs.minAir, 0)} to {fmt(obs.maxAir, 0)} °C</span>
-            </Row>
-            <Row label="Pressure">
+            <K label="Air temperature">
+              <span className="num">
+                {fmt(obs.minAir, 0)} to {fmt(obs.maxAir, 0)} °C
+              </span>
+            </K>
+            <K label="Pressure">
               <span className="num">{fmt(obs.pressure, 0)} Pa</span>
-            </Row>
+            </K>
           </>
         ) : (
-          <p className="text-[11px] leading-snug text-slate-500">
+          <p className="note">
             The public daily feed has no record for this sol. Older sols are in the PDS REMS archive, which is not
-            integrated yet.
+            integrated.
           </p>
         )}
-      </Section>
+      </Block>
+
+      <Block>
+        <details className="science-details">
+          <summary>Rover attitude and record</summary>
+          <div>
+            <K label="Record">
+              <span className="num">RMC {w.rmc}</span>
+            </K>
+            <K label="Tilt / pitch / roll">
+              <span className="num">
+                {fmt(w.tilt, 1, '°')} / {fmt(w.pitch, 1, '°')} / {fmt(w.roll, 1, '°')}
+              </span>
+            </K>
+            <K label="Heading (yaw)">
+              <span className="num">{fmt(w.yaw, 1, '°')}</span>
+            </K>
+            <p className="note mt-1">
+              End-of-drive position. Where the rover was between drive ends is not in the public file.
+            </p>
+          </div>
+        </details>
+
+        <details className="science-details mt-1.5">
+          <summary>Terrain here, from our elevation data</summary>
+          <div>
+            <TerrainAt lon={w.lon} lat={w.lat} compact />
+            <p className="note mt-1">
+              Any difference from the rover file&rsquo;s own elevation shows how well the two datasets line up.
+            </p>
+          </div>
+        </details>
+
+        <details className="science-details mt-1.5">
+          <summary>Coordinates</summary>
+          <div>
+            <Coordinates lon={w.lon} lat={w.lat} />
+          </div>
+        </details>
+      </Block>
     </>
   );
 }
 
-function LandmarkDetails({ sel }) {
+function LandmarkCard({ sel }) {
   const waypoints = useStore((s) => s.rover.waypoints);
+  const setSol = useStore((s) => s.setSol);
   const l = useMemo(() => resolveLandmarks(waypoints).find((x) => x.id === sel.id), [waypoints, sel.id]);
   if (!l) return null;
+
   return (
     <>
-      <Section title={NAME_CLASS[l.nameClass]} right={<EvidenceBadge kind="Interpreted" />}>
-        <h2 className="text-base font-medium leading-tight text-slate-50">{l.name}</h2>
-        {l.alias && <p className="text-xs text-slate-400">{l.alias}</p>}
-        <p className="mt-2 text-xs leading-relaxed text-slate-300">{l.significance}</p>
-      </Section>
-      <Section title="Location">
-        <Row label="Type">{l.type}</Row>
-        <Coordinates lon={l.lon} lat={l.lat} />
+      <Block>
+        <div className="mb-1.5 flex items-start justify-between gap-2">
+          <div>
+            <h2 className="text-[13px] font-medium leading-tight text-slate-50">{l.name}</h2>
+            <p className="note">
+              {NAME_CLASS[l.nameClass]}
+              {l.alias ? ` · ${l.alias}` : ''}
+            </p>
+          </div>
+          <EvidenceBadge kind="Interpreted" />
+        </div>
+        <p className="body-text">{l.significance}</p>
+      </Block>
+
+      <Block>
+        <K label="Type">{l.type}</K>
         {l.sizeKm && (
-          <Row label="Size (gazetteer)">
+          <K label="Size">
             <span className="num">{l.sizeKm} km</span>
-          </Row>
+          </K>
         )}
         {l.elev != null && (
-          <Row label="Rover elevation">
+          <K label="Elevation">
             <span className="num">{l.elev.toFixed(1)} m</span>
-          </Row>
+          </K>
         )}
-        {l.unit && <Row label="Rock unit">{l.unit}</Row>}
-        <p className="mt-2 text-[11px] leading-snug text-slate-500">
-          <span className="text-slate-400">Position basis:</span> {l.positionBasis}
-        </p>
-        <p className="mt-1 text-[11px] leading-snug text-slate-500">
-          <span className="text-slate-400">Uncertainty:</span> {l.uncertainty}
-        </p>
-        <p className="mt-1 text-[11px] leading-snug text-slate-500">
-          <span className="text-slate-400">Source:</span> {l.source} <DatasetLink id={l.datasetId} />
-        </p>
-        <div className="mt-2 flex gap-2">
+        {l.unit && <K label="Rock unit">{l.unit}</K>}
+        <div className="mt-2 flex gap-1.5">
           <button
             type="button"
-            className="btn btn-accent"
+            className="btn btn-accent flex-1"
             onClick={() => cameraApi.flyTo(l.lon, l.lat, l.sizeKm ? Math.max(20, l.sizeKm * 1.6) : 4)}
           >
             Fly here
           </button>
           {l.resolvedSol != null && (
-            <button type="button" className="btn" onClick={() => useStore.getState().setSol(l.resolvedSol)}>
-              Set sol {l.resolvedSol}
+            <button type="button" className="btn flex-1" onClick={() => setSol(l.resolvedSol)}>
+              Sol {l.resolvedSol}
             </button>
           )}
         </div>
-      </Section>
-      <Section title="Terrain at this position" right={<EvidenceBadge kind="Derived" />}>
-        <TerrainAt lon={l.lon} lat={l.lat} />
-      </Section>
+      </Block>
+
+      <Block>
+        <details className="science-details">
+          <summary>Where this position comes from</summary>
+          <div className="note space-y-1">
+            <p>
+              <span className="text-slate-400">Basis:</span> {l.positionBasis}
+            </p>
+            <p>
+              <span className="text-slate-400">Uncertainty:</span> {l.uncertainty}
+            </p>
+            <p>
+              <span className="text-slate-400">Source:</span> {l.source} <DatasetLink id={l.datasetId} />
+            </p>
+          </div>
+        </details>
+        <details className="science-details mt-1.5">
+          <summary>Coordinates and terrain</summary>
+          <div>
+            <Coordinates lon={l.lon} lat={l.lat} />
+            <TerrainAt lon={l.lon} lat={l.lat} compact />
+          </div>
+        </details>
+      </Block>
     </>
   );
 }
 
-function MeasureResult() {
-  const points = useStore((s) => s.measure.points);
-  const active = useStore((s) => s.measure.active);
-  const terrainVersion = useStore((s) => s.terrainVersion);
-  const patch = useStore((s) => s.patch);
-  const clear = useStore((s) => s.clearMeasure);
-
-  const result = useMemo(() => {
-    if (points.length !== 2) return null;
-    const [a, b] = points;
-    const total = greatCircleMeters(a.lon, a.lat, b.lon, b.lat);
-    const n = 240;
-    const samples = [];
-    const sources = new Set();
-    for (let i = 0; i <= n; i++) {
-      const t = i / n;
-      const lon = a.lon + (b.lon - a.lon) * t;
-      const lat = a.lat + (b.lat - a.lat) * t;
-      const s = heightProvider.sample(lon, lat);
-      if (s) sources.add(s.datasetId);
-      samples.push({ d: total * t, h: s ? s.h : null });
-    }
-    const h0 = samples[0].h;
-    const h1 = samples[n].h;
-    return { total, samples, sources: [...sources], dh: h0 !== null && h1 !== null ? h1 - h0 : null };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [points, terrainVersion, patch]);
-
-  if (!active && points.length === 0) return null;
-  return (
-    <Section
-      title="Measurement"
-      right={
-        points.length > 0 ? (
-          <button type="button" className="text-[11px] text-slate-400 hover:text-slate-200" onClick={clear}>
-            Clear
-          </button>
-        ) : null
-      }
-    >
-      {points.length < 2 && (
-        <p className="text-xs text-slate-400">
-          {points.length === 0 ? 'Click the terrain to set the first point.' : 'Click a second point.'}
-        </p>
-      )}
-      {result && (
-        <>
-          <Row label="Distance (on the sphere)">
-            <span className="num">{dist(result.total)}</span>
-          </Row>
-          <Row label="Elevation change">
-            <span className="num">{result.dh !== null ? `${result.dh >= 0 ? '+' : ''}${result.dh.toFixed(1)} m` : '—'}</span>
-          </Row>
-          <div className="mt-2">
-            <ProfileChart samples={result.samples} />
-          </div>
-          <p className="mt-1 flex flex-wrap items-center gap-1 text-[11px] leading-snug text-slate-500">
-            Profile (metres) sampled at {(result.total / 240).toFixed(0)} m steps from
-            {result.sources.length ? result.sources.map((id) => <DatasetLink key={id} id={id} />) : ' no elevation data'}
-            . True scale; vertical exaggeration is not applied.
-          </p>
-        </>
-      )}
-    </Section>
-  );
-}
-
-function Overview() {
+/** Nothing selected: what this place is, and what you can do next. */
+function DefaultCard() {
   const terrain = useStore((s) => s.terrain);
   const rover = useStore((s) => s.rover);
+  const toggleMeasure = useStore((s) => s.toggleMeasure);
+  const measuring = useStore((s) => s.measure.active);
   const last = rover.waypoints[rover.waypoints.length - 1];
+
+  const toRover = () => {
+    const s = useStore.getState();
+    const wps = s.rover.waypoints;
+    if (!wps.length) {
+      cameraApi.flyTo(BRADBURY.lon, BRADBURY.lat, 6);
+      return;
+    }
+    const i = s.sol === null ? wps.length - 1 : Math.max(0, waypointIndexAtSol(wps, s.sol));
+    cameraApi.flyTo(wps[i].lon, wps[i].lat, 2);
+  };
+
   return (
     <>
-      <Section title="Gale crater">
-        <p className="text-xs leading-relaxed text-slate-300">
-          An ancient impact crater about 154 km across with a mound of layered sedimentary rock, Aeolis Mons, at its
-          centre. NASA’s Curiosity rover landed on the northern floor in August 2012 and has been climbing the mound’s
-          lower slopes since 2014.
+      <Block>
+        <h2 className="text-[13px] font-medium text-slate-50">Gale Crater</h2>
+        <p className="body-text mt-1">
+          An impact crater 154 km across with a mound of layered rock at its centre, Aeolis Mons. NASA&rsquo;s Curiosity
+          rover landed on the northern floor in 2012 and has been climbing the mound ever since.
         </p>
-        <p className="mt-2 text-xs leading-relaxed text-slate-400">
-          Click the terrain, a waypoint or a label to inspect it. Every value shown names its dataset and whether it is
-          measured, derived, interpreted or simulated.
-        </p>
-      </Section>
-      <Section title="What is loaded">
-        <Row label="Elevation">
+        <p className="note mt-1.5">Click the terrain, a rover waypoint or a named place to inspect it.</p>
+      </Block>
+
+      <Block>
+        <div className="grid grid-cols-2 gap-1.5">
+          <button type="button" className="btn" onClick={toRover}>
+            <Icon name="rover" size={13} />
+            Curiosity
+          </button>
+          <button type="button" className="btn" onClick={() => cameraApi.flyTo(137.7, -5.0, 260)}>
+            <Icon name="crater" size={13} />
+            Whole crater
+          </button>
+          <button
+            type="button"
+            className={`btn col-span-2 ${measuring ? 'btn-accent' : ''}`}
+            onClick={toggleMeasure}
+          >
+            <Icon name="ruler" size={13} />
+            {measuring ? 'Measuring — click two points' : 'Measure distance'}
+          </button>
+        </div>
+      </Block>
+
+      <Block title="Loaded now">
+        <K label="Elevation">
           {terrain.status === 'ready' ? (
             <DatasetLink id={terrain.meta.dataset_id} />
           ) : (
             <span className="text-interpreted">flat reference surface</span>
           )}
-        </Row>
-        <Row label="Imagery">
+        </K>
+        <K label="Imagery">
           <DatasetLink id="D05" /> <DatasetLink id="D06" />
-        </Row>
-        <Row label="Rover">
+        </K>
+        <K label="Rover">
           {rover.status === 'ready' ? (
-            <span>
-              to sol <span className="num">{last.sol}</span>
+            <span className="num">
+              to sol {last.sol}
               {last.distTotalM !== null ? ` · ${dist(last.distTotalM)}` : ''}
             </span>
           ) : rover.status === 'error' ? (
             <span className="text-rose-300">unavailable</span>
           ) : (
-            'loading…'
+            <span className="text-slate-500">loading…</span>
           )}
-        </Row>
-        {rover.error && <p className="mt-1 text-[11px] leading-snug text-rose-300/80">{rover.error}</p>}
-        {rover.join && !rover.join.ok && (
-          <p className="mt-1 text-[11px] leading-snug text-slate-500">
-            The path file could not be matched to the waypoint file reliably, so the path is not coloured by sol.
-          </p>
-        )}
-      </Section>
-      <Section title="Projection">
-        <p className="text-[11px] leading-snug text-slate-500">
-          Local equirectangular projection on a sphere of radius 3,396,190 m, planetocentric latitude, east longitude.
-          Planetary curvature is not applied to the surface (about 2 km of drop at the edges of this region).
-        </p>
-      </Section>
+        </K>
+      </Block>
+
+      <Block>
+        <details className="science-details">
+          <summary>Advanced · data information</summary>
+          <div className="note space-y-1.5">
+            <p>
+              Positions use a local equirectangular projection on a sphere of radius 3,396,190 m, planetocentric
+              latitude, east longitude.
+            </p>
+            <p>
+              Planetary curvature is not applied to the surface, which costs about 2 km of drop at the edges of this
+              region.
+            </p>
+            {rover.error && <p className="text-rose-300/80">{rover.error}</p>}
+            {rover.join && !rover.join.ok && (
+              <p>The path file could not be matched to the waypoint file reliably, so the path is not coloured by sol.</p>
+            )}
+            <p>Click any dataset code to see its instrument, resolution, limitations and citation.</p>
+          </div>
+        </details>
+      </Block>
     </>
   );
 }
 
-function Units() {
+/** Written rock-unit glossary. There is no unit polygon layer to toggle. */
+function GeologyBody() {
   return (
-    <div className="px-3 py-3">
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-slate-100">Rock units</h3>
-        <EvidenceBadge kind="Interpreted" />
-      </div>
-      <p className="mb-3 text-[11px] leading-snug text-slate-500">{UNIT_NOTE}</p>
-      <ul className="space-y-3">
-        {STRAT_UNITS.map((u) => (
-          <li key={u.name}>
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-xs font-medium text-slate-100">{u.name}</span>
-              <span className="text-[10px] uppercase tracking-wider text-slate-500">{u.rank}</span>
-            </div>
-            <p className="text-xs leading-snug text-slate-400">{u.text}</p>
-            <p className="text-[11px] text-slate-600">{u.source}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <Block right={<EvidenceBadge kind="Interpreted" />}>
+        <p className="body-text">
+          The rocks Curiosity drives over are grouped into units — bodies of rock that formed in the same way at
+          roughly the same time. These descriptions come from published mapping, not from a data layer.
+        </p>
+      </Block>
+      <Block>
+        <ul className="space-y-2.5">
+          {STRAT_UNITS.map((u) => (
+            <li key={u.name}>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[12px] font-medium text-slate-100">{u.name}</span>
+                <span className="label">{u.rank}</span>
+              </div>
+              <p className="note mt-0.5">{u.text}</p>
+              <p className="note opacity-70">{u.source}</p>
+            </li>
+          ))}
+        </ul>
+      </Block>
+      <Block>
+        <details className="science-details">
+          <summary>Why there is no geology layer on the map</summary>
+          <div>
+            <p className="note">{UNIT_NOTE}</p>
+          </div>
+        </details>
+      </Block>
+    </>
   );
 }
 
-const TABS = [
-  ['selection', 'Selection'],
-  ['weather', 'Weather'],
-  ['units', 'Rock units'],
-];
+/* --------------------------------------------------------------- panel --- */
 
 export default function InfoPanel() {
   const open = useStore((s) => s.infoOpen);
   const tab = useStore((s) => s.infoTab);
   const selection = useStore((s) => s.selection);
+  const waypoints = useStore((s) => s.rover.waypoints);
+  const sol = useStore((s) => s.sol);
+  const weatherStatus = useStore((s) => s.weather.status);
   const setValue = useStore((s) => s.setValue);
+
   if (!open) return null;
 
+  const toggle = (id) => setValue('infoTab', tab === id ? null : id);
+
+  const inspectHint = !selection
+    ? 'Gale Crater'
+    : selection.type === 'waypoint'
+    ? `Sol ${waypoints[selection.index] ? waypoints[selection.index].sol : '—'}`
+    : selection.type === 'landmark'
+    ? 'Named place'
+    : 'Terrain point';
+
+  const weatherHint =
+    weatherStatus === 'ready' ? (sol !== null ? `Sol ${sol}` : 'Rover record') : weatherStatus === 'error' ? 'Unavailable' : 'Loading…';
+
+  // The dock itself is transparent: only the three boxes take pointer input, so
+  // the empty space below them leaves the map clickable.
   return (
-    <aside className="panel fade-in pointer-events-auto absolute bottom-32 right-3 top-16 z-30 flex w-80 flex-col overflow-hidden">
-      <nav className="flex shrink-0 border-b border-line">
-        {TABS.map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setValue('infoTab', id)}
-            className={`flex-1 px-2 py-2 text-[11px] uppercase tracking-[0.12em] transition ${
-              tab === id ? 'border-b border-accent text-accent' : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      <div className="thin-scroll flex-1 overflow-y-auto">
-        {tab === 'selection' && (
-          <>
-            <MeasureResult />
-            {selection && (
-              <div className="flex justify-end px-3 pt-2">
-                <button
-                  type="button"
-                  className="text-[11px] text-slate-500 hover:text-slate-300"
-                  onClick={() => setValue('selection', null)}
-                >
-                  Clear selection
-                </button>
-              </div>
-            )}
-            {!selection && <Overview />}
-            {selection && selection.type === 'point' && <PointDetails sel={selection} />}
-            {selection && selection.type === 'waypoint' && <WaypointDetails sel={selection} />}
-            {selection && selection.type === 'landmark' && <LandmarkDetails sel={selection} />}
-          </>
+    <aside className="gale-dock gale-dock-right info-panel fade-in pointer-events-none" aria-label="Inspector">
+      <Acc id="selection" icon="inspect" title="Inspect" hint={inspectHint} open={tab === 'selection'} onToggle={toggle}>
+        {selection && (
+          <div className="flex justify-end px-2.5 pt-2">
+            <button
+              type="button"
+              className="text-[10.5px] text-slate-500 transition hover:text-slate-200"
+              onClick={() => setValue('selection', null)}
+            >
+              Clear selection
+            </button>
+          </div>
         )}
-        {tab === 'weather' && <WeatherPanel />}
-        {tab === 'units' && <Units />}
-      </div>
+        {!selection && <DefaultCard />}
+        {selection && selection.type === 'point' && <PointCard sel={selection} />}
+        {selection && selection.type === 'waypoint' && <WaypointCard sel={selection} />}
+        {selection && selection.type === 'landmark' && <LandmarkCard sel={selection} />}
+      </Acc>
+
+      <Acc id="weather" icon="weather" title="Weather" hint={weatherHint} open={tab === 'weather'} onToggle={toggle}>
+        <WeatherPanel />
+      </Acc>
+
+      <Acc id="units" icon="geology" title="Geology" hint={`${STRAT_UNITS.length} rock units`} open={tab === 'units'} onToggle={toggle}>
+        <GeologyBody />
+      </Acc>
     </aside>
   );
 }

@@ -1,23 +1,31 @@
 'use client';
-// Observed weather at the rover (REMS daily feed, D22). Measured values only,
-// always tied to a sol and to where the rover was on that sol.
+// Observed weather at the rover (REMS daily feed, D22).
+//
+// Measured values only, always tied to a sol and to where the rover was on
+// that sol. The three readings people actually come for — air temperature,
+// ground temperature and pressure — are shown first; everything else, and
+// every caveat about the instrument, is behind a disclosure.
+//
+// This is a historical record, never a forecast and never "now".
 import { useMemo } from 'react';
 import { waypointIndexAtSol } from '@/lib/data/landmarks';
 import { formatLat, formatLon } from '@/lib/coordinates/projection';
 import { useStore } from '@/store/useStore';
-import { DatasetLink, EvidenceBadge, Row, fmt } from '@/components/panels/ui';
+import { DatasetLink, EvidenceBadge, fmt } from '@/components/panels/ui';
 
 function Spark({ records, keys, colors }) {
   const W = 280;
-  const H = 70;
+  const H = 64;
   const pts = records.filter((r) => keys.some((k) => r[k] !== null));
   if (pts.length < 2) return null;
   let lo = Infinity;
   let hi = -Infinity;
-  for (const r of pts) for (const k of keys) if (r[k] !== null) {
-    lo = Math.min(lo, r[k]);
-    hi = Math.max(hi, r[k]);
-  }
+  for (const r of pts)
+    for (const k of keys)
+      if (r[k] !== null) {
+        lo = Math.min(lo, r[k]);
+        hi = Math.max(hi, r[k]);
+      }
   if (hi - lo < 1e-6) hi = lo + 1;
   const s0 = pts[0].sol;
   const s1 = pts[pts.length - 1].sol;
@@ -38,11 +46,31 @@ function Spark({ records, keys, colors }) {
         }
         return <path key={k} d={d} fill="none" stroke={colors[n]} strokeWidth="1.2" />;
       })}
-      <text x="26" y="12" textAnchor="end" fontSize="9" fill="#94a3b8" fontFamily="monospace">{Math.round(hi)}</text>
-      <text x="26" y={H - 16} textAnchor="end" fontSize="9" fill="#94a3b8" fontFamily="monospace">{Math.round(lo)}</text>
-      <text x="30" y={H - 3} fontSize="9" fill="#94a3b8" fontFamily="monospace">sol {s0}</text>
-      <text x={W - 6} y={H - 3} textAnchor="end" fontSize="9" fill="#94a3b8" fontFamily="monospace">sol {s1}</text>
+      <text x="26" y="12" textAnchor="end" fontSize="9" fill="#6b7686" fontFamily="monospace">
+        {Math.round(hi)}
+      </text>
+      <text x="26" y={H - 16} textAnchor="end" fontSize="9" fill="#6b7686" fontFamily="monospace">
+        {Math.round(lo)}
+      </text>
+      <text x="30" y={H - 3} fontSize="9" fill="#6b7686" fontFamily="monospace">
+        sol {s0}
+      </text>
+      <text x={W - 6} y={H - 3} textAnchor="end" fontSize="9" fill="#6b7686" fontFamily="monospace">
+        sol {s1}
+      </text>
     </svg>
+  );
+}
+
+function Stat({ label, value, unit, tone }) {
+  return (
+    <div className="rounded-md border px-2 py-1.5" style={{ borderColor: 'var(--g-line-soft)' }}>
+      <div className="label mb-0.5">{label}</div>
+      <div className="num text-[13px] leading-none" style={{ color: tone || 'var(--g-text)' }}>
+        {value}
+        {unit && <span className="ml-1 text-[9.5px] text-slate-500">{unit}</span>}
+      </div>
+    </div>
   );
 }
 
@@ -63,88 +91,131 @@ export default function WeatherPanel() {
     return i < 0 ? null : waypoints[i];
   }, [record, waypoints]);
 
-  if (weather.status === 'loading') return <p className="p-3 text-xs text-slate-400">Loading the REMS feed…</p>;
+  if (weather.status === 'loading') {
+    return <p className="px-2.5 py-3 note">Loading the REMS feed…</p>;
+  }
   if (weather.status === 'error') {
     return (
-      <div className="p-3 text-xs text-slate-300">
-        <p className="text-rose-300">Weather observations unavailable.</p>
-        <p className="mt-1 text-slate-500">{weather.error}</p>
+      <div className="px-2.5 py-3">
+        <p className="text-[11.5px] text-rose-300">Weather observations unavailable.</p>
+        <p className="note mt-1">{weather.error}</p>
       </div>
     );
   }
-  if (!record) return <p className="p-3 text-xs text-slate-400">The feed returned no records.</p>;
+  if (!record) return <p className="px-2.5 py-3 note">The feed returned no records.</p>;
 
   const first = weather.records[0];
   const last = weather.records[weather.records.length - 1];
 
   return (
-    <div className="px-3 py-3">
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-slate-100">Observed at the rover</h3>
-        <div className="flex items-center gap-1.5">
+    <div className="px-2.5 py-2.5">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="num text-[15px] leading-none text-slate-50">Sol {record.sol}</span>
+            {record.date && <span className="note">{record.date}</span>}
+          </div>
+          <p className="note">Recorded at the rover — not a forecast.</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
           <EvidenceBadge kind="Measured" />
           <DatasetLink id="D22" />
         </div>
       </div>
+
       {!exact && sol !== null && (
-        <p className="mb-2 rounded border border-line bg-white/5 px-2 py-1.5 text-[11px] leading-snug text-slate-400">
-          No record for sol {sol} in the feed (it covers sols {first.sol}–{last.sol}). Showing the most recent record.
+        <p className="mb-2 rounded border px-2 py-1.5 note" style={{ borderColor: 'var(--g-line)' }}>
+          No record for sol {sol} in the feed (it covers sols {first.sol}–{last.sol}). Showing the most recent.
         </p>
       )}
-      <Row label="Sol">
-        <span className="num">{record.sol}</span>
-        {record.date ? ` · ${record.date}` : ''}
-      </Row>
-      <Row label="Season">
-        {record.ls !== null ? <span className="num">Ls {record.ls}°</span> : '—'}
-        {record.season ? ` · ${record.season}` : ''}
-      </Row>
-      <Row label="Air temperature">
-        <span className="num">{fmt(record.minAir, 0)} to {fmt(record.maxAir, 0)} °C</span>
-      </Row>
-      <Row label="Ground temperature">
-        <span className="num">{fmt(record.minGround, 0)} to {fmt(record.maxGround, 0)} °C</span>
-      </Row>
-      <Row label="Pressure">
-        <span className="num">{fmt(record.pressure, 0)} Pa</span>
-      </Row>
-      <Row label="UV index">{record.uv || '—'}</Row>
-      <Row label="Sky">{record.opacity || '—'}</Row>
-      <Row label="Sunrise / sunset">
-        <span className="num">{record.sunrise || '—'} / {record.sunset || '—'}</span>
-      </Row>
-      <Row label="Wind">
-        <span className="text-slate-500">no calibrated measurements exist</span>
-      </Row>
-      <Row label="Rover position that sol">
-        {where ? <span className="num">{formatLat(where.lat)}, {formatLon(where.lon)}</span> : '—'}
-      </Row>
 
-      <div className="mt-3">
-        <div className="mb-1 flex items-center justify-between">
-          <span className="label">Air temperature, daily min and max (°C)</span>
+      <div className="grid grid-cols-2 gap-1.5">
+        <Stat
+          label="Air temperature"
+          value={`${fmt(record.minAir, 0)} to ${fmt(record.maxAir, 0)}`}
+          unit="°C"
+          tone="var(--g-accent)"
+        />
+        <Stat
+          label="Ground temperature"
+          value={`${fmt(record.minGround, 0)} to ${fmt(record.maxGround, 0)}`}
+          unit="°C"
+        />
+        <Stat label="Pressure" value={fmt(record.pressure, 0)} unit="Pa" tone="var(--g-ok)" />
+        <Stat label="Sky" value={record.opacity || '—'} />
+      </div>
+
+      <div className="mt-2.5">
+        <div className="mb-0.5 flex items-center justify-between">
+          <span className="label">Air temperature</span>
+          <span className="flex items-center gap-2 text-[9.5px] text-slate-500">
+            <span className="flex items-center gap-1">
+              <span className="h-[2px] w-2.5" style={{ background: '#e8884a' }} /> max
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-[2px] w-2.5" style={{ background: '#6cb6f5' }} /> min
+            </span>
+            <span>°C</span>
+          </span>
         </div>
         <Spark records={weather.records} keys={['maxAir', 'minAir']} colors={['#e8884a', '#6cb6f5']} />
       </div>
-      <div className="mt-2">
-        <span className="label">Pressure (Pa)</span>
+
+      <div className="mt-1.5">
+        <div className="mb-0.5 flex items-center justify-between">
+          <span className="label">Pressure</span>
+          <span className="text-[9.5px] text-slate-500">Pa</span>
+        </div>
         <Spark records={weather.records} keys={['pressure']} colors={['#5fd0a0']} />
       </div>
 
-      <ul className="mt-3 list-disc space-y-1 pl-4 text-[11px] leading-snug text-slate-500">
-        <li>These values were measured at the rover only. They are not valid for other places in the crater.</li>
-        <li>
-          Curiosity’s wind sensor was damaged at landing; the archive holds no calibrated wind speed or direction.
-        </li>
-        <li>The rover has climbed during the mission, so long series mix seasonal change with change of place.</li>
-        <li>Units are those of NASA’s public feed (°C, Pa).</li>
-        <li>
-          Feed {weather.origin === 'snapshot' ? 'read from a local snapshot' : 'retrieved live'}
-          {weather.retrieved ? ` on ${weather.retrieved.slice(0, 10)}` : ''}; newest record is sol {last.sol}
-          {last.date ? ` (${last.date})` : ''}.
-        </li>
-        <li>Modelled conditions for other locations (Mars Climate Database) are not integrated yet.</li>
-      </ul>
+      <details className="science-details mt-2">
+        <summary>More measurements</summary>
+        <div>
+          <div className="kv">
+            <span>Season</span>
+            <span>
+              {record.ls !== null ? <span className="num">Ls {record.ls}°</span> : '—'}
+              {record.season ? ` · ${record.season}` : ''}
+            </span>
+          </div>
+          <div className="kv">
+            <span>UV index</span>
+            <span>{record.uv || '—'}</span>
+          </div>
+          <div className="kv">
+            <span>Sunrise / sunset</span>
+            <span className="num">
+              {record.sunrise || '—'} / {record.sunset || '—'}
+            </span>
+          </div>
+          <div className="kv">
+            <span>Wind</span>
+            <span className="text-slate-500">no calibrated data</span>
+          </div>
+          <div className="kv">
+            <span>Rover position</span>
+            <span className="num">
+              {where ? `${formatLat(where.lat)}, ${formatLon(where.lon)}` : '—'}
+            </span>
+          </div>
+        </div>
+      </details>
+
+      <details className="science-details mt-1.5">
+        <summary>About these observations</summary>
+        <ul className="list-disc space-y-1 pl-4 note">
+          <li>Measured by REMS on Curiosity itself, so they describe one point in Gale, not the whole crater.</li>
+          <li>Wind has no calibrated speed or direction: the sensor was damaged early in the mission.</li>
+          <li>A long run of sols mixes seasonal change with the rover moving and climbing.</li>
+          <li>Units follow NASA&rsquo;s feed (°C, Pa). Modelled local weather is not integrated.</li>
+          <li>
+            Feed {weather.origin === 'snapshot' ? 'uses a local snapshot' : 'retrieved live'}
+            {weather.retrieved ? ` on ${weather.retrieved.slice(0, 10)}` : ''}; latest sol {last.sol}
+            {last.date ? ` (${last.date})` : ''}.
+          </li>
+        </ul>
+      </details>
     </div>
   );
 }
