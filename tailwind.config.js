@@ -25,6 +25,8 @@ module.exports = {
       colors: {
         space: '#07080a', ink: '#0e1014', line: 'rgba(255,255,255,0.09)', accent: '#e8884a', measured: '#5fd0a0', derived: '#6cb6f5', interpreted: '#e9c46a', simulated: '#b79cf2',
         // Brand ramp sampled from the A-ROUTE wordmark gradient (see lib/brand.js).
+        coal: { 700: '#2a2623', 800: '#1b1917', 900: '#110f0e', 950: '#0a0908' },
+        ice: { 300: '#a9c7dc', 400: '#7fa9c6', 500: '#5b8bab' },
         mars: {
           50: '#FDF3E6',
           100: '#FBC361',

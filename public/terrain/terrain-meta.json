@@ -1,0 +1,25 @@
+{
+ "width": 4456,
+ "height": 5067,
+ "lonMin": 76.99743706146002,
+ "lonMax": 78.58256332408818,
+ "latMin": 17.580519910544755,
+ "latMax": 19.29018700686615,
+ "elevMin": -3504.645263671875,
+ "elevMax": -475.8408203125,
+ "encoding": "uint16-le, row 0 = north, elev = elevMin + v/65535*(elevMax-elevMin)",
+ "metresPerPixel": 20,
+ "calibrated": true,
+ "kind": "dem",
+ "source": "M20_JezeroCrater_CTXDEM_20m.tif",
+ "method": "Numerical elevations read from the GeoTIFF.",
+ "limitations": [
+  "13977 no-data cells were filled from their western neighbour."
+ ],
+ "textureBounds": {
+  "lonMin": 76.99,
+  "lonMax": 78.58,
+  "latMin": 17.58,
+  "latMax": 19.29
+ }
+}

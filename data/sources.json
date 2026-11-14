@@ -1,0 +1,23 @@
+{
+  "farley2020": { "citation": "Farley, K. A. et al. (2020). Mars 2020 Mission Overview. Space Science Reviews 216, 142.", "url": "https://doi.org/10.1007/s11214-020-00762-y" },
+  "fassett2005": { "citation": "Fassett, C. I. & Head, J. W. (2005). Fluvial sedimentary deposits on Mars: Ancient deltas in a crater lake in the Nili Fossae region. Geophysical Research Letters 32, L14201.", "url": "https://doi.org/10.1029/2005GL023456" },
+  "goudge2015": { "citation": "Goudge, T. A. et al. (2015). Assessing the mineralogy of the watershed and fan deposits of the Jezero crater paleolake system, Mars. JGR Planets 120, 775-808.", "url": "https://doi.org/10.1002/2014JE004782" },
+  "mangold2021": { "citation": "Mangold, N. et al. (2021). Perseverance rover reveals an ancient delta-lake system and flood deposits at Jezero crater, Mars. Science 374, 711-717.", "url": "https://doi.org/10.1126/science.abl4051" },
+  "farley2022": { "citation": "Farley, K. A. et al. (2022). Aqueously altered igneous rocks sampled on the floor of Jezero crater, Mars. Science 377, eabo2196.", "url": "https://doi.org/10.1126/science.abo2196" },
+  "liu2022": { "citation": "Liu, Y. et al. (2022). An olivine cumulate outcrop on the floor of Jezero crater, Mars. Science 377, 1513-1519.", "url": "https://doi.org/10.1126/science.abo2756" },
+  "sharma2023": { "citation": "Sharma, S. et al. (2023). Diverse organic-mineral associations in Jezero crater, Mars. Nature 619, 724-732.", "url": "https://doi.org/10.1038/s41586-023-06143-z" },
+  "hurowitz2025": { "citation": "Hurowitz, J. A. et al. (2025). Redox-driven mineral and organic associations in Jezero Crater, Mars. Nature 645.", "url": "https://www.nature.com/nature/" },
+  "nasa-mission": { "citation": "NASA Science: Mars 2020 Perseverance mission pages.", "url": "https://science.nasa.gov/mission/mars-2020-perseverance/" },
+  "nasa-samples": { "citation": "NASA Science: Perseverance Rover Mars Rock Samples (sample-by-sample catalogue).", "url": "https://science.nasa.gov/mission/mars-2020-perseverance/mars-rock-samples/" },
+  "nasa-wildcat": { "citation": "NASA/JPL news release (15 Sep 2022): NASA's Perseverance Rover Investigates Geologically Rich Mars Terrain.", "url": "https://www.jpl.nasa.gov/news/" },
+  "nasa-depot": { "citation": "NASA/JPL news release (Jan 2023): NASA's Perseverance Rover Completes Mars Sample Depot.", "url": "https://www.jpl.nasa.gov/news/" },
+  "nasa-cheyava": { "citation": "NASA/JPL news release (25 Jul 2024): NASA's Perseverance Rover Scientists Find Intriguing Mars Rock.", "url": "https://www.jpl.nasa.gov/news/" },
+  "nasa-falbreen": { "citation": "NASA news release (Aug 2025): NASA's Perseverance Rover Captures Mars Vista As Clear As Day (Falbreen mosaic, sol 1516).", "url": "https://www.nasa.gov/missions/mars-2020-perseverance/perseverance-rover/nasas-perseverance-rover-captures-mars-vista-as-clear-as-day/" },
+  "pia26699": { "citation": "NASA/JPL Photojournal PIA26699 (28 Apr 2026): NASA's Perseverance Mars Rover Surveys 'Crocodile Bridge'.", "url": "https://www.jpl.nasa.gov/images/pia26699-nasas-perseverance-mars-rover-surveys-crocodile-bridge/" },
+  "pia26753": { "citation": "NASA/JPL Photojournal PIA26753 (11 May 2026): NASA's Perseverance Captures Panorama at 'Arbot'.", "url": "https://www.jpl.nasa.gov/images/pia26753-nasas-perseverance-captures-panorama-at-arbot/" },
+  "nasa-selfie2026": { "citation": "NASA/JPL news release (12 May 2026): NASA's Perseverance Rover Snaps Selfie in Mars' Western Frontier.", "url": "https://www.jpl.nasa.gov/news/nasas-perseverance-rover-snaps-selfie-in-mars-western-frontier/" },
+  "mastcamz360": { "citation": "Bell, J. F. & Joseph, J. (compilers). Mastcam-Z's 360-degree Panorama Collection. Arizona State University. Image credit NASA/JPL-Caltech/ASU/MSSS.", "url": "https://mastcamz.asu.edu/mastcam-zs-360-panorama-collection/" },
+  "waypoints": { "citation": "NASA/JPL-Caltech. Mars 2020 rover waypoints (M20_waypoints.json), 'Where is Perseverance?' map service.", "url": "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_waypoints.json" },
+  "usgs-dem": { "citation": "Fergason, R. L. et al. (2020). Mars 2020 Terrain Relative Navigation CTX DTM Mosaic. USGS Astrogeology Science Center.", "url": "https://doi.org/10.5066/P906QQT8" },
+  "usgs-science-dem": { "citation": "Calef, F. (2021). Mars 2020 Science Investigation CTX DEM Mosaic (20 m/pixel). USGS Astrogeology Science Center.", "url": "https://astrogeology.usgs.gov/search/map/mars_2020_science_investigation_ctx_dem_mosaic" }
+}

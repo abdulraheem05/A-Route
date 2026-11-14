@@ -2,7 +2,7 @@
   "name": "a-route",
   "version": "0.1.0",
   "private": true,
-  "description": "A-ROUTE \u2014 cinematic Mars exploration and Gale Crater scientific terrain workspace",
+  "description": "A-ROUTE \u2014 Mars cinematic explorer with Gale MAP and Jezero MAP/PLAY",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -16,7 +16,8 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "three": "^0.180.0",
-    "zustand": "^4.5.5"
+    "zustand": "^4.5.5",
+    "lucide-react": "^0.453.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

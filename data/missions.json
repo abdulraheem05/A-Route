@@ -1,0 +1,258 @@
+[
+  {
+    "id": "m01",
+    "sequence": 1,
+    "title": "Arrival at Jezero",
+    "location": "Octavia E. Butler Landing",
+    "sols": "0-99",
+    "campaign": "Landing and checkout",
+    "objective": "Get your bearings at the landing site.",
+    "objectives": [
+      {
+        "id": "m01-pano",
+        "type": "panorama",
+        "target": "octavia-butler-landing",
+        "label": "Look around from the landing panorama",
+        "required": true
+      }
+    ],
+    "discovery": "Jezero held a lake. Its delta is the reason the rover is here, though the rocks under your feet at the landing site turned out not to be lake sediment at all.",
+    "nextMission": "m02"
+  },
+  {
+    "id": "m02",
+    "sequence": 2,
+    "title": "The Crater Floor",
+    "location": "Máaz formation, south of the landing site",
+    "sols": "100-200",
+    "campaign": "Crater Floor Campaign",
+    "objective": "Head south along the edge of Séítah to the Citadelle ridge.",
+    "objectives": [
+      {
+        "id": "m02-roubion",
+        "type": "inspect",
+        "target": "roubion",
+        "label": "Inspect Roubion, the first coring attempt",
+        "required": true
+      },
+      {
+        "id": "m02-rochette",
+        "type": "inspect",
+        "target": "rochette",
+        "label": "Inspect Rochette, source of the first cores",
+        "required": true
+      }
+    ],
+    "discovery": "The crater floor is igneous rock altered by water. Because igneous rock can be dated, these cores could give Jezero's history real ages once they are on Earth.",
+    "nextMission": "m03"
+  },
+  {
+    "id": "m03",
+    "sequence": 3,
+    "title": "Into Séítah",
+    "location": "South Séítah",
+    "sols": "200-340",
+    "campaign": "Crater Floor Campaign",
+    "objective": "Enter the dune-filled Séítah region and reach its layered outcrops.",
+    "objectives": [
+      {
+        "id": "m03-martre",
+        "type": "panorama",
+        "target": "seitah-martre-outcrop",
+        "label": "View the Martre outcrop panorama",
+        "required": true
+      },
+      {
+        "id": "m03-brac",
+        "type": "inspect",
+        "target": "brac",
+        "label": "Inspect the Brac olivine cumulate",
+        "required": true
+      }
+    ],
+    "discovery": "Séítah is an olivine cumulate: crystals that settled out of slowly cooling magma. It later reacted with water to form carbonate. Organic molecules were detected in crater-floor rocks, which is not the same as detecting life.",
+    "nextMission": "m04"
+  },
+  {
+    "id": "m04",
+    "sequence": 4,
+    "title": "Closing the Crater Floor",
+    "location": "Adziilii crater and Sid, near the landing site",
+    "sols": "340-380",
+    "campaign": "Crater Floor Campaign",
+    "objective": "Retrace the route north and collect the last crater-floor cores.",
+    "objectives": [
+      {
+        "id": "m04-sid",
+        "type": "inspect",
+        "target": "sid",
+        "label": "Inspect the Sid sample target",
+        "required": true
+      },
+      {
+        "id": "m04-sidpano",
+        "type": "panorama",
+        "target": "sid-chal-rocks",
+        "label": "View the Sid and Ch'ał rocks panorama",
+        "required": true
+      }
+    ],
+    "discovery": "Eight rock cores now span the crater floor's igneous history. The sediment the lake left behind lies ahead, at the delta.",
+    "nextMission": "m05"
+  },
+  {
+    "id": "m05",
+    "sequence": 5,
+    "title": "The Delta Front",
+    "location": "Rockytop Scarp",
+    "sols": "415-652",
+    "campaign": "Delta Front Campaign",
+    "objective": "Explore the exposed delta-front layers at Rockytop Scarp.",
+    "objectives": [
+      {
+        "id": "m05-wildcat",
+        "type": "inspect",
+        "target": "wildcat-organics",
+        "label": "Inspect the Wildcat Ridge mudstone",
+        "required": true
+      },
+      {
+        "id": "m05-wildcatpano",
+        "type": "panorama",
+        "target": "rockytop-scarp",
+        "label": "View the Rockytop Scarp panorama",
+        "required": true
+      }
+    ],
+    "discovery": "The delta front holds lake mud and river sand. The Wildcat Ridge mudstone carries organic molecules alongside sulfate salts: a habitable setting and a strong sample, but not evidence of life.",
+    "nextMission": "m06"
+  },
+  {
+    "id": "m06",
+    "sequence": 6,
+    "title": "The Sample Depot",
+    "location": "Three Forks",
+    "sols": "653-693",
+    "campaign": "Three Forks Sample Depot",
+    "objective": "Visit the flat ground where the rover left its backup samples.",
+    "objectives": [
+      {
+        "id": "m06-pano",
+        "type": "panorama",
+        "target": "three-forks-depot",
+        "label": "View the depot panorama",
+        "required": true
+      }
+    ],
+    "discovery": "Ten tubes lie at Three Forks: a complete, documented sample set waiting on the surface of another planet.",
+    "nextMission": "m07"
+  },
+  {
+    "id": "m07",
+    "sequence": 7,
+    "title": "Fan Top and Margin",
+    "location": "Upper fan and the crater's inner margin",
+    "sols": "708-1150",
+    "campaign": "Upper Fan and Margin Unit Campaigns",
+    "objective": "Climb onto the delta and follow its top west to the carbonate-bearing margin.",
+    "objectives": [
+      {
+        "id": "m07-belva",
+        "type": "panorama",
+        "target": "belva-crater",
+        "label": "View Belva crater",
+        "required": true
+      },
+      {
+        "id": "m07-boulders",
+        "type": "inspect",
+        "target": "boulders",
+        "label": "Inspect the fan-top boulder field",
+        "required": true
+      },
+      {
+        "id": "m07-margin",
+        "type": "inspect",
+        "target": "margin-unit",
+        "label": "Inspect the margin unit carbonates",
+        "required": true
+      }
+    ],
+    "discovery": "Boulders on the fan top record violent late floods. The margin's carbonates formed with water, but whether on a lake shore or underground is still argued.",
+    "nextMission": "m08"
+  },
+  {
+    "id": "m08",
+    "sequence": 8,
+    "title": "Neretva Vallis and Bright Angel",
+    "location": "The inlet river channel",
+    "sols": "1150-1250",
+    "campaign": "Margin Unit Campaign",
+    "objective": "Drop into the dry river channel and reach the pale outcrop on its far bank.",
+    "objectives": [
+      {
+        "id": "m08-ba",
+        "type": "panorama",
+        "target": "bright-angel",
+        "label": "View the Bright Angel outcrop",
+        "required": true
+      },
+      {
+        "id": "m08-cheyava",
+        "type": "inspect",
+        "target": "cheyava-falls",
+        "label": "Inspect the Cheyava Falls rock",
+        "required": true
+      }
+    ],
+    "discovery": "Cheyava Falls contains organic carbon and mineral 'leopard spots' that could be a trace of ancient microbes or of non-living chemistry. It is a potential biosignature and remains unresolved.",
+    "nextMission": "m09"
+  },
+  {
+    "id": "m09",
+    "sequence": 9,
+    "title": "The Crater Rim",
+    "location": "Western rim: Lookout Hill, Witch Hazel Hill, Krokodillen",
+    "sols": "1252-1700",
+    "campaign": "Crater Rim / Northern Rim Campaign",
+    "objective": "Climb out of the crater to the rim crest and explore its outer slope.",
+    "objectives": [
+      {
+        "id": "m09-lookout",
+        "type": "panorama",
+        "target": "lookout-hill",
+        "label": "View the rim crest at Lookout Hill",
+        "required": true
+      },
+      {
+        "id": "m09-silver",
+        "type": "inspect",
+        "target": "silver-mountain",
+        "label": "Inspect the Silver Mountain core site",
+        "required": true
+      }
+    ],
+    "discovery": "You are standing on rock far older than the lake. Rim samples such as Silver Mountain may record what early Mars' crust was like.",
+    "nextMission": "m10"
+  },
+  {
+    "id": "m10",
+    "sequence": 10,
+    "title": "Beyond the Rim",
+    "location": "Crocodile Bridge and Lac de Charmes",
+    "sols": "1700-1900",
+    "campaign": "Northern Rim Campaign",
+    "objective": "Follow the rover west, out of Jezero.",
+    "objectives": [
+      {
+        "id": "m10-croc",
+        "type": "panorama",
+        "target": "crocodile-bridge",
+        "label": "View Crocodile Bridge",
+        "required": true
+      }
+    ],
+    "discovery": "You have caught up with the rover. What these rocks mean is being worked out now.",
+    "nextMission": null
+  }
+]
