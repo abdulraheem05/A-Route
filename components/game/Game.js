@@ -12,7 +12,7 @@ import Sky from '@/components/terrain/Sky';
 import Markers from '@/components/world/Markers';
 import { TraverseLine, RouteLine } from '@/components/world/TraverseLine';
 import Player from './Player';
-import LoadingSequence from './LoadingSequence';
+import MarsLoadingScreen from '@/components/ui/MarsLoadingScreen';
 import HUD from '@/components/ui/HUD';
 import PauseMenu from '@/components/ui/PauseMenu';
 import SettingsPanel from '@/components/ui/SettingsPanel';
@@ -121,7 +121,16 @@ export default function Game() {
           {noticeOpen && <DataNotice hf={assets.hf} />}
         </>
       )}
-      {!ready && <LoadingSequence steps={steps} error={error} />}
+      {/* The same real step list the previous loader used, in the shared
+          cinematic screen. Nothing about the loading work itself changed. */}
+      {!ready && (
+        <MarsLoadingScreen
+          variant="play"
+          stages={steps.map((s) => ({ label: s.label, done: s.done, detail: s.detail }))}
+          error={error}
+          onRetry={() => window.location.reload()}
+        />
+      )}
     </div>
   );
 }

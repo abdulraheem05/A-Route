@@ -13,6 +13,6 @@ import jezero from '@/lib/mars/craters/jezero';
 
 const JezeroGame = dynamic(() => import('@/components/game/Game'), { ssr: false });
 
-export default function JezeroWorkspace() {
-  return <CraterWorkspace crater={jezero} play={<JezeroGame />} />;
+export default function JezeroWorkspace({ mode = 'MAP' }) {
+  return <CraterWorkspace crater={jezero} mode={mode} play={<JezeroGame />} />;
 }

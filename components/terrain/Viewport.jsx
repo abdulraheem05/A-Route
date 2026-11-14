@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { lonLatToXZ } from '@/lib/coordinates/projection';
 import { useCrater } from '@/lib/mars/CraterContext';
+import { useStore } from '@/store/useStore';
 import BaseTerrain from '@/components/terrain/BaseTerrain';
 import DetailPatch from '@/components/terrain/DetailPatch';
 import CameraRig from '@/components/terrain/CameraRig';
@@ -11,6 +12,7 @@ import { MeasureLine, SelectionMarker } from '@/components/terrain/Markers';
 import Traverse from '@/components/rover/Traverse';
 import { RoverMarker, WaypointDots } from '@/components/rover/Waypoints';
 import LandmarkMarkers from '@/components/layers/LandmarkMarkers';
+import RouteLines from '@/components/layers/RouteLines';
 
 export default function Viewport() {
   const crater = useCrater();
@@ -36,6 +38,7 @@ export default function Viewport() {
       onCreated={({ gl, camera }) => {
         gl.setClearColor('#07080a');
         camera.lookAt(TX, 0, TZ);
+        useStore.setState({ rendererReady: true });
       }}
     >
       <CameraRig />
@@ -46,6 +49,7 @@ export default function Viewport() {
       <RoverMarker />
       <LandmarkMarkers />
       <SelectionMarker />
+      <RouteLines />
       <MeasureLine />
       <TerrainPicker />
     </Canvas>

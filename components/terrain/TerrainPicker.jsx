@@ -73,8 +73,16 @@ export default function TerrainPicker() {
       const p = pickAt(x, y);
       if (!p) return;
       const s = useStore.getState();
-      if (s.measure.active) {
-        s.addMeasurePoint({ lon: p.lon, lat: p.lat });
+      // Measure & Plan has armed one end of a route: this click sets it.
+      if (s.plan.picking) {
+        s.setPlanPoint(s.plan.picking, {
+          lon: p.lon,
+          lat: p.lat,
+          elev: p.elev,
+          datasetId: p.datasetId,
+          label: null,
+          kind: 'terrain',
+        });
         return;
       }
       const wps = s.rover.waypoints;

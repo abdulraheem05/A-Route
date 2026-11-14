@@ -1,10 +1,10 @@
 'use client';
 // Floating map toolbox.
 //
-// Two stacks on the right edge: what you are doing (select / measure) and
+// Two stacks on the right edge: what you are doing (select / plan a route) and
 // where you are looking (north, zoom, tilt, whole crater, rover). Every
 // button calls an existing camera or store action — there are no placeholders
-// here, so a route-planning tool is deliberately absent until routing exists.
+// here. The ruler arms Measure & Plan and opens its section of the inspector.
 //
 // The landing site, the home view and the rover's name come from the crater
 // configuration; Gale's are Bradbury Landing, 137.7°E/5.0°S and Curiosity.
@@ -50,8 +50,9 @@ export default function NavControls() {
   const azimuth = useStore((s) => s.camera.azimuth);
   const polar = useStore((s) => s.camera.polar);
   const infoOpen = useStore((s) => s.infoOpen);
-  const measuring = useStore((s) => s.measure.active);
-  const toggleMeasure = useStore((s) => s.toggleMeasure);
+  const picking = useStore((s) => s.plan.picking);
+  const startPicking = useStore((s) => s.startPicking);
+  const stopPicking = useStore((s) => s.stopPicking);
 
   const toRover = () => {
     const s = useStore.getState();
@@ -72,16 +73,20 @@ export default function NavControls() {
       <div className="panel tool-stack pointer-events-auto flex flex-col overflow-hidden">
         <Tool
           tip="Select — click the map to inspect"
-          active={!measuring}
+          active={!picking}
           onClick={() => {
-            if (measuring) toggleMeasure();
+            if (picking) stopPicking();
           }}
         >
           <svg {...svg}>
             <path d="M3.2 2.4 L12.4 7.4 L8.4 8.5 L6.6 12.4 Z" />
           </svg>
         </Tool>
-        <Tool tip="Measure distance and elevation" active={measuring} onClick={toggleMeasure}>
+        <Tool
+          tip="Measure and plan a route"
+          active={!!picking}
+          onClick={() => (picking ? stopPicking() : startPicking('start'))}
+        >
           <svg {...svg}>
             <path d="M2 12 L12 2 L14 4 L4 14 Z M5 9 l1.2 1.2 M7 7 l1.2 1.2 M9 5 l1.2 1.2" />
           </svg>

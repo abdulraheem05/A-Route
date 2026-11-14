@@ -16,7 +16,7 @@ export default function Readout() {
   const cursor = useStore((s) => s.cursor);
   const dist = useStore((s) => s.camera.dist);
   const exaggeration = useStore((s) => s.exaggeration);
-  const measuring = useStore((s) => s.measure.active);
+  const picking = useStore((s) => s.plan.picking);
 
   const range = dist >= 10 ? `${dist.toFixed(0)} km` : dist >= 1 ? `${dist.toFixed(1)} km` : `${(dist * 1000).toFixed(0)} m`;
 
@@ -39,7 +39,9 @@ export default function Readout() {
         )}
       </Cell>
       <div className="ml-auto flex items-baseline gap-6">
-        {measuring && <span className="text-[11px] text-derived">Measuring — click two points</span>}
+        {picking && (
+          <span className="text-[11px] text-accent">Click the terrain to set the {picking} point</span>
+        )}
         <Cell label="Range">{range}</Cell>
         <div className="flex items-baseline gap-2">
           <span className="label">Vertical</span>

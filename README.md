@@ -9,6 +9,16 @@ A merged project combining the A-ROUTE cinematic intro/destination selector with
 - `/explore/jezero` — Jezero workspace (same MAP engine as Gale; PLAY is the first-person game)
 - `/explore/<id>` — any other crater registered in `lib/mars/craters/`
 
+## Measure & Plan
+Both craters share a Measure & Plan section in the inspector: measure the
+direct line between two points, or plan terrain-aware fastest and safest routes
+with A* over the loaded DEM. See `docs/MEASURE_AND_PLAN.md` for the cost
+models, what is measured and what is assumed.
+
+## Loading screens
+One reusable screen in three variants, driven by real loading signals rather
+than timers. See `docs/LOADING_SCREENS.md`.
+
 ## Gale MAP capabilities
 - 3D terrain rendering backed by preprocessed HRSC Gale crater elevation tiles
 - terrain/orbital layer controls and dataset/provenance panels

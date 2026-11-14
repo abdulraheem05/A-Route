@@ -1,5 +1,5 @@
-import GaleWorkspace from '@/components/GaleWorkspace';
+import { redirect } from 'next/navigation';
 
 export default function GalePage() {
-  return <GaleWorkspace />;
+  redirect('/explore/gale/map');
 }

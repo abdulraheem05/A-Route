@@ -7371,5 +7371,458 @@
    "2a6523341c0a2b40",
    "94e6031ed9f617c0"
   ]
+ },
+ "measureAndPlan": {
+  "assumptionDefaults": {
+   "paceMPerSol": 100,
+   "paceSource": "assumed",
+   "safeSlopeLimitDeg": 15,
+   "hardSlopeLimitDeg": 30,
+   "halfSpeedSlopeDeg": 10,
+   "safetyWeight": 6
+  },
+  "craters": {
+   "gale": {
+    "demPrepared": true,
+    "dem": {
+     "datasetId": "D02",
+     "resM": 100,
+     "validFraction": "33c69e3b81ade53f",
+     "width": 2405,
+     "height": 2232
+    },
+    "pace": null,
+    "places": {
+     "count": 6,
+     "kinds": [
+      "iau",
+      "landing"
+     ],
+     "filtered": 1,
+     "list": [
+      {
+       "id": "landing",
+       "kind": "landing",
+       "name": "Bradbury Landing",
+       "lon": "b37a87db212e6140",
+       "lat": "f148bc3c9d5b12c0"
+      },
+      {
+       "id": "aeolis-mons",
+       "kind": "iau",
+       "name": "Aeolis Mons",
+       "lon": "33333333333b6140",
+       "lat": "52b81e85eb5114c0"
+      },
+      {
+       "id": "aeolis-palus",
+       "kind": "iau",
+       "name": "Aeolis Palus",
+       "lon": "3d0ad7a3702d6140",
+       "lat": "e17a14ae47e111c0"
+      },
+      {
+       "id": "farah-vallis",
+       "kind": "iau",
+       "name": "Farah Vallis",
+       "lon": "9a99999999196140",
+       "lat": "1f85eb51b81e18c0"
+      },
+      {
+       "id": "peace-vallis",
+       "kind": "iau",
+       "name": "Peace Vallis",
+       "lon": "8fc2f5285c276140",
+       "lat": "d7a3703d0ad710c0"
+      },
+      {
+       "id": "gediz-vallis",
+       "kind": "iau",
+       "name": "Gediz Vallis",
+       "lon": "ae47e17a142e6140",
+       "lat": "66666666666613c0"
+      }
+     ]
+    },
+    "routes": {
+     "landing to the mound": {
+      "grid": {
+       "w": 31,
+       "h": 194,
+       "stride": 1,
+       "cellMetres": "39fb466b48f55840"
+      },
+      "directM": "4f440ef3d931c640",
+      "directCoverage": "000000000000f03f",
+      "fastest": {
+       "vertices": 8,
+       "distanceM": "779e6067b31dc740",
+       "gainM": "c8fd94b6a8dd8c40",
+       "lossM": "008faa717a3a3440",
+       "avgSlopeDeg": "1da338a3c6dd1440",
+       "maxSlopeDeg": "0000004017c32b40",
+       "travelSols": "edd02d3af94b6440",
+       "steepCells": 0,
+       "slopeBasis": "DEM cell slope over a 200 m baseline",
+       "first": {
+        "lon": "b37a87db212e6140",
+        "lat": "f148bc3c9d5b12c0"
+       },
+       "last": {
+        "lon": "b4c70be9702d6140",
+        "lat": "41d653abaf1e13c0"
+       }
+      },
+      "safest": {
+       "vertices": 30,
+       "distanceM": "26095b1cf9ffc840",
+       "gainM": "30df33e084cf8c40",
+       "lossM": "00bc86a5ff753240",
+       "avgSlopeDeg": "9dc5f46651251240",
+       "maxSlopeDeg": "000000e074e32b40",
+       "travelSols": "8d44c36d31006540",
+       "steepCells": 0,
+       "slopeBasis": "DEM cell slope over a 200 m baseline",
+       "first": {
+        "lon": "b37a87db212e6140",
+        "lat": "f148bc3c9d5b12c0"
+       },
+       "last": {
+        "lon": "b4c70be9702d6140",
+        "lat": "41d653abaf1e13c0"
+       }
+      },
+      "notes": [
+       "Planned on the full 100 m DEM grid."
+      ]
+     },
+     "along the crater floor": {
+      "grid": {
+       "w": 123,
+       "h": 62,
+       "stride": 1,
+       "cellMetres": "39fb466b48f55840"
+      },
+      "directM": "3a33536368fcbe40",
+      "directCoverage": "000000000000f03f",
+      "fastest": {
+       "vertices": 17,
+       "distanceM": "b9ea53e076bdc040",
+       "gainM": "00c70fdc85854840",
+       "lossM": "00dbbeafbd135140",
+       "avgSlopeDeg": "e740a2adcd43f03f",
+       "maxSlopeDeg": "000000409d120d40",
+       "travelSols": "17b6800563c05540",
+       "steepCells": 0,
+       "slopeBasis": "DEM cell slope over a 200 m baseline",
+       "first": {
+        "lon": "b37a87db212e6140",
+        "lat": "f148bc3c9d5b12c0"
+       },
+       "last": {
+        "lon": "57ebc4e5f8316140",
+        "lat": "b43ee5982c1e12c0"
+       }
+      },
+      "safest": {
+       "vertices": 17,
+       "distanceM": "b9ea53e076bdc040",
+       "gainM": "00c70fdc85854840",
+       "lossM": "00dbbeafbd135140",
+       "avgSlopeDeg": "e740a2adcd43f03f",
+       "maxSlopeDeg": "000000409d120d40",
+       "travelSols": "17b6800563c05540",
+       "steepCells": 0,
+       "slopeBasis": "DEM cell slope over a 200 m baseline",
+       "first": {
+        "lon": "b37a87db212e6140",
+        "lat": "f148bc3c9d5b12c0"
+       },
+       "last": {
+        "lon": "57ebc4e5f8316140",
+        "lat": "b43ee5982c1e12c0"
+       }
+      },
+      "notes": [
+       "Planned on the full 100 m DEM grid.",
+       "Both models chose the same line: on this terrain there is no gentler alternative worth the extra distance."
+      ]
+     }
+    },
+    "noDataEndpoint": {
+     "cornerHasData": false,
+     "routesProduced": 0,
+     "lastNote": "The end point sits where the elevation dataset has no coverage, so there is no terrain to route over. Pick a point inside the covered area, or read the direct line instead."
+    }
+   },
+   "jezero": {
+    "demPrepared": true,
+    "dem": {
+     "datasetId": "JZ20",
+     "resM": 100,
+     "validFraction": "934decc7fc5bca3f",
+     "width": 2204,
+     "height": 2098
+    },
+    "pace": {
+     "paceMPerSol": "afe9a559315b3140",
+     "paceSource": "waypoint track",
+     "basis": "34.6 km between waypoints over sols 13–2006"
+    },
+    "places": {
+     "count": 21,
+     "kinds": [
+      "iau",
+      "landing",
+      "mission",
+      "rover"
+     ],
+     "filtered": 1,
+     "list": [
+      {
+       "id": "landing",
+       "kind": "landing",
+       "name": "Octavia E. Butler Landing",
+       "lon": "8a68c74fdb5c5340",
+       "lat": "e729bc15d3713240"
+      },
+      {
+       "id": "rover-latest",
+       "kind": "rover",
+       "name": "Perseverance, latest position",
+       "lon": "63edce5ee64e5340",
+       "lat": "6bc37a06816f3240"
+      },
+      {
+       "id": "jezero",
+       "kind": "iau",
+       "name": "Jezero",
+       "lon": "85eb51b81e655340",
+       "lat": "e17a14ae47613240"
+      },
+      {
+       "id": "jezero-mons",
+       "kind": "iau",
+       "name": "Jezero Mons",
+       "lon": "1f85eb51b88e5340",
+       "lat": "295c8fc2f5283240"
+      },
+      {
+       "id": "belva",
+       "kind": "mission",
+       "name": "Belva crater",
+       "lon": "2c8b99af98575340",
+       "lat": "05ecd58d987b3240"
+      },
+      {
+       "id": "cheyava-falls",
+       "kind": "mission",
+       "name": "Cheyava Falls rock",
+       "lon": "1018149b89535340",
+       "lat": "e85b51105d7f3240"
+      },
+      {
+       "id": "rim-crest",
+       "kind": "mission",
+       "name": "Crater rim crest at Lookout Hill",
+       "lon": "08d0e78a2f515340",
+       "lat": "e3f5e48a20753240"
+      },
+      {
+       "id": "margin-unit",
+       "kind": "mission",
+       "name": "Margin unit carbonates",
+       "lon": "461fda6460565340",
+       "lat": "79cd4810f07c3240"
+      },
+      {
+       "id": "rochette",
+       "kind": "mission",
+       "name": "Rochette: first rock cores",
+       "lon": "490c6555825c5340",
+       "lat": "4fecdb28366e3240"
+      },
+      {
+       "id": "skinner-samples",
+       "kind": "mission",
+       "name": "Skinner Ridge sandstone",
+       "lon": "b392b9a6fe595340",
+       "lat": "fdafe7297a753240"
+      },
+      {
+       "id": "depot",
+       "kind": "mission",
+       "name": "Three Forks sample depot",
+       "lon": "8a8ee4f21f5a5340",
+       "lat": "31e076b2e5733240"
+      },
+      {
+       "id": "wildcat-organics",
+       "kind": "mission",
+       "name": "Wildcat Ridge mudstone",
+       "lon": "5938a4acfa595340",
+       "lat": "d6ff7be869753240"
+      },
+      {
+       "id": "amalik",
+       "kind": "mission",
+       "name": "Amalik outcrop at Enchanted Lake",
+       "lon": "f9f2a732b1595340",
+       "lat": "92e5a8cc62733240"
+      },
+      {
+       "id": "brac",
+       "kind": "mission",
+       "name": "Brac outcrop: olivine cumulate",
+       "lon": "9059496d5a5c5340",
+       "lat": "e256c544186f3240"
+      },
+      {
+       "id": "crocodile-bridge-crust",
+       "kind": "mission",
+       "name": "Crocodile Bridge: gateway to Lac de Charmes",
+       "lon": "1970d8ae774f5340",
+       "lat": "adbd70638a6d3240"
+      },
+      {
+       "id": "falbreen-contact",
+       "kind": "mission",
+       "name": "Falbreen geologic contact",
+       "lon": "94fbdb6d30505340",
+       "lat": "270548fad5733240"
+      },
+      {
+       "id": "boulders",
+       "kind": "mission",
+       "name": "Fan-top boulder field",
+       "lon": "4f6c91f677575340",
+       "lat": "809f0eb7857b3240"
+      },
+      {
+       "id": "issole",
+       "kind": "mission",
+       "name": "Issole: altered olivine rock",
+       "lon": "03709adb505c5340",
+       "lat": "508d976e126f3240"
+      },
+      {
+       "id": "roubion",
+       "kind": "mission",
+       "name": "Roubion: the first coring attempt",
+       "lon": "a41c8a0aee5c5340",
+       "lat": "328f1dd0a96d3240"
+      },
+      {
+       "id": "sid",
+       "kind": "mission",
+       "name": "Sid: the Ch'ał member",
+       "lon": "3edacdc6e95c5340",
+       "lat": "4d47846f2f713240"
+      },
+      {
+       "id": "silver-mountain",
+       "kind": "mission",
+       "name": "Silver Mountain core at Shallow Bay",
+       "lon": "4dfb83d4ef505340",
+       "lat": "7db5bcd5e7753240"
+      }
+     ]
+    },
+    "routes": {
+     "landing to the delta": {
+      "grid": {
+       "w": 154,
+       "h": 33,
+       "stride": 1,
+       "cellMetres": "5dcf7764ee685840"
+      },
+      "directM": "81a3cfa37ed4c040",
+      "directCoverage": "000000000000f03f",
+      "fastest": {
+       "vertices": 19,
+       "distanceM": "ad3d12f918fcc140",
+       "gainM": "706e191b75bc7c40",
+       "lossM": "c0b11c95babf4340",
+       "avgSlopeDeg": "d5a6b6cc69440c40",
+       "maxSlopeDeg": "0000006073072f40",
+       "travelSols": "6121759d3eb78340",
+       "steepCells": 1,
+       "slopeBasis": "DEM cell slope over a 195 m baseline",
+       "first": {
+        "lon": "8a68c74fdb5c5340",
+        "lat": "e729bc15d3713240"
+       },
+       "last": {
+        "lon": "b12a4ef732535340",
+        "lat": "6a7b05b353783240"
+       }
+      },
+      "safest": {
+       "refused": true,
+       "note": "No route stays under 15° the whole way. Raise the slope limit, or use the fastest route and read its maximum slope."
+      },
+      "notes": [
+       "Planned on the full 98 m DEM grid."
+      ]
+     },
+     "landing to the northern rim": {
+      "grid": {
+       "w": 35,
+       "h": 179,
+       "stride": 1,
+       "cellMetres": "5dcf7764ee685840"
+      },
+      "directM": "70502332508ec440",
+      "directCoverage": "000000000000f03f",
+      "fastest": {
+       "vertices": 27,
+       "distanceM": "68740bc80c94c540",
+       "gainM": "f033215561276740",
+       "lossM": "60af5f08b2435440",
+       "avgSlopeDeg": "4fec0433efadfa3f",
+       "maxSlopeDeg": "00000080861e1d40",
+       "travelSols": "be437bb460bb8440",
+       "steepCells": 0,
+       "slopeBasis": "DEM cell slope over a 195 m baseline",
+       "first": {
+        "lon": "8a68c74fdb5c5340",
+        "lat": "e729bc15d3713240"
+       },
+       "last": {
+        "lon": "9c7c0616b85e5340",
+        "lat": "d0e16b19ba9e3240"
+       }
+      },
+      "safest": {
+       "vertices": 31,
+       "distanceM": "80442c064ce0c540",
+       "gainM": "908b413057466740",
+       "lossM": "a05ea0be9d815440",
+       "avgSlopeDeg": "9ed8c9dbe5b4f83f",
+       "maxSlopeDeg": "0000002070071540",
+       "travelSols": "d181ffd949df8440",
+       "steepCells": 0,
+       "slopeBasis": "DEM cell slope over a 195 m baseline",
+       "first": {
+        "lon": "8a68c74fdb5c5340",
+        "lat": "e729bc15d3713240"
+       },
+       "last": {
+        "lon": "9c7c0616b85e5340",
+        "lat": "d0e16b19ba9e3240"
+       }
+      },
+      "notes": [
+       "Planned on the full 98 m DEM grid."
+      ]
+     }
+    },
+    "noDataEndpoint": {
+     "cornerHasData": false,
+     "routesProduced": 0,
+     "lastNote": "The end point sits where the elevation dataset has no coverage, so there is no terrain to route over. Pick a point inside the covered area, or read the direct line instead."
+    }
+   }
+  }
  }
 }

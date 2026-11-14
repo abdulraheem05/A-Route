@@ -1,15 +1,17 @@
 'use client';
-// Selection pin and the measurement line.
+// Selection pin and the direct line between the Measure & Plan endpoints.
+// Planned routes are drawn by components/layers/RouteLines.jsx.
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { resolveLandmarks } from '@/lib/data/landmarks';
 import { useCrater } from '@/lib/mars/CraterContext';
 import { cameraApi } from '@/lib/terrain/cameraApi';
+import { END_COLOR, START_COLOR } from '@/lib/terrain/routing';
 import { scenePosition } from '@/lib/terrain/place';
 import { useStore } from '@/store/useStore';
 
-function Pin({ position, color }) {
+export function Pin({ position, color }) {
   const group = useRef();
   useFrame(() => {
     if (group.current) group.current.scale.setScalar(Math.max(0.002, cameraApi.distance() * 0.012));
@@ -57,40 +59,43 @@ export function SelectionMarker() {
   return <Pin position={position} color="#ffffff" />;
 }
 
+/** The two endpoints and the straight line between them. */
 export function MeasureLine() {
-  const points = useStore((s) => s.measure.points);
+  const start = useStore((s) => s.plan.start);
+  const end = useStore((s) => s.plan.end);
   const exaggeration = useStore((s) => s.exaggeration);
   const terrainVersion = useStore((s) => s.terrainVersion);
   const patch = useStore((s) => s.patch);
 
-  const { ends, line } = useMemo(() => {
-    const e = points.map((p) => scenePosition(p.lon, p.lat, null, exaggeration, 0));
-    let l = [];
-    if (points.length === 2) {
+  const { a, b, line } = useMemo(() => {
+    const at = start ? scenePosition(start.lon, start.lat, start.elev ?? null, exaggeration, 0) : null;
+    const bt = end ? scenePosition(end.lon, end.lat, end.elev ?? null, exaggeration, 0) : null;
+    const l = [];
+    if (start && end) {
       const n = 160;
       for (let i = 0; i <= n; i++) {
         const t = i / n;
-        const lon = points[0].lon + (points[1].lon - points[0].lon) * t;
-        const lat = points[0].lat + (points[1].lat - points[0].lat) * t;
-        const p = scenePosition(lon, lat, null, exaggeration, 5);
+        const p = scenePosition(
+          start.lon + (end.lon - start.lon) * t,
+          start.lat + (end.lat - start.lat) * t,
+          null,
+          exaggeration,
+          5
+        );
         l.push(p[0], p[1], p[2]);
       }
     }
-    return { ends: e, line: l };
+    return { a: at, b: bt, line: l };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [points, exaggeration, terrainVersion, patch]);
+  }, [start, end, exaggeration, terrainVersion, patch]);
 
-  if (!points.length) return null;
+  if (!a && !b) return null;
   return (
     <group>
-      {ends.map((p, i) => (
-        <Pin key={i} position={p} color="#6cb6f5" />
-      ))}
+      {a && <Pin position={a} color={START_COLOR} />}
+      {b && <Pin position={b} color={END_COLOR} />}
       {line.length >= 6 && (
-        <>
-          <Line points={line} color="#6cb6f5" lineWidth={2.2} renderOrder={6} />
-          <Line points={line} color="#6cb6f5" lineWidth={1} transparent opacity={0.25} depthTest={false} renderOrder={5} />
-        </>
+        <Line points={line} color="#8aa0b4" lineWidth={1} dashed dashSize={0.6} gapSize={0.45} transparent opacity={0.5} renderOrder={5} />
       )}
     </group>
   );

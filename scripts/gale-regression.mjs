@@ -12,7 +12,11 @@
 // asserts the camera framing, imagery zooms, detail levels and data URLs that
 // used to be literals inside the components.
 //
-// A final Jezero section records what Jezero's configuration implies — its
+// A measure-and-plan section records the routing engine's output over the
+// prepared DEMs: the place index, the pace derived from the rover record, and
+// both cost models over fixed endpoint pairs that cross real relief.
+//
+// A Jezero section records what Jezero's configuration implies — its
 // projection, camera framing, tile coverage, DEM grid, and the bundled
 // Perseverance waypoints and landmarks through the real adapters.
 //
@@ -32,6 +36,9 @@ import { listCraters } from '@/lib/mars/craters';
 import { setActiveCrater } from '@/lib/mars/activeCrater';
 import { resolveLandmarks as resolveLandmarksFor } from '@/lib/data/landmarks';
 import bundledTraverse from '@/data/traverse.json';
+import path from 'node:path';
+import { planRoutes, paceFromWaypoints, DEFAULT_ASSUMPTIONS } from '@/lib/terrain/routing';
+import { buildPlaceIndex, filterPlaces } from '@/lib/data/placeIndex';
 import * as consts from '@/lib/mars/constants';
 import * as trek from '@/lib/data/trekAdapter';
 import { HeightGrid } from '@/lib/terrain/heightGrid';
@@ -527,6 +534,165 @@ out.jezero = (() => {
   return r;
 })();
 
+// ---- measure & plan ----------------------------------------------------
+// Routing, place index and statistics, run against the prepared DEM binaries
+// in public/data/terrain. Skipped with a recorded marker where a crater's DEM
+// has not been prepared, so the check still passes on a fresh clone.
+out.measureAndPlan = (() => {
+  const r = { assumptionDefaults: DEFAULT_ASSUMPTIONS, craters: {} };
+
+  const loadDem = (dir) => {
+    const base = path.join(process.cwd(), 'public', dir);
+    let meta;
+    try {
+      meta = JSON.parse(fs.readFileSync(path.join(base, 'meta.json'), 'utf8'));
+    } catch (e) {
+      return null;
+    }
+    const level = meta.levels[0];
+    const buf = fs.readFileSync(path.join(base, level.file));
+    const data = new Float32Array(buf.buffer, buf.byteOffset, buf.byteLength / 4);
+    return {
+      meta,
+      grid: new HeightGrid({
+        data,
+        width: level.width,
+        height: level.height,
+        west: level.west,
+        north: level.north,
+        dx: level.dx,
+        dy: level.dy,
+        datasetId: meta.dataset_id,
+      }),
+    };
+  };
+
+  const asWaypoints = (crater) => {
+    if (crater.id !== 'jezero') return [];
+    return rover.parseWaypoints(
+      {
+        features: bundledTraverse.waypoints.map((p) => ({
+          properties: { sol: p.sol, lon: p.lon, lat: p.lat, elev_geoid: p.elev },
+          geometry: { type: 'Point', coordinates: [p.lon, p.lat, p.elev] },
+        })),
+      },
+      crater.rover.bounds
+    ).waypoints;
+  };
+
+  // Fixed endpoint pairs per crater, chosen to cross real relief. Offsets from
+  // each landing site, so they move with the configuration rather than being
+  // magic coordinates.
+  const PAIRS = {
+    gale: [
+      { name: 'landing to the mound', d: [-0.0216, -0.1905] },
+      { name: 'along the crater floor', d: [0.12, 0.06] },
+    ],
+    jezero: [
+      { name: 'landing to the delta', d: [-0.1509, 0.0254] },
+      { name: 'landing to the northern rim', d: [0.0291, 0.1754] },
+    ],
+  };
+
+  for (const crater of [gale, jezero]) {
+    setActiveCrater(crater);
+    heightProvider.reset();
+    const dem = loadDem(crater.terrain.craterUrl.replace(/^\//, ''));
+    const entry = { demPrepared: !!dem };
+    if (!dem) {
+      // No DEM on disk: record the honest refusal the interface would show.
+      const plan = planRoutes({
+        a: { lon: crater.rover.landingSite.lon, lat: crater.rover.landingSite.lat },
+        b: { lon: crater.rover.landingSite.lon + 0.05, lat: crater.rover.landingSite.lat + 0.05 },
+        waypoints: [],
+      });
+      entry.withoutDem = { routes: Object.keys(plan.routes).length, notes: plan.notes };
+      r.craters[crater.id] = entry;
+      continue;
+    }
+    heightProvider.setCrater({ sample: dem.grid, render: dem.grid, meta: dem.meta });
+    entry.dem = {
+      datasetId: dem.meta.dataset_id,
+      resM: dem.meta.res_m,
+      validFraction: hex(dem.meta.valid_fraction),
+      width: dem.grid.width,
+      height: dem.grid.height,
+    };
+
+    const wps = asWaypoints(crater);
+    const pace = paceFromWaypoints(wps);
+    entry.pace = pace ? { paceMPerSol: hex(pace.paceMPerSol), paceSource: pace.paceSource, basis: pace.basis } : null;
+
+    const places = buildPlaceIndex(crater, wps, null);
+    entry.places = {
+      count: places.count === undefined ? places.length : places.length,
+      kinds: [...new Set(places.map((p) => p.kind))].sort(),
+      filtered: filterPlaces(places, 'landing').length,
+      list: places.map((p) => ({ id: p.id, kind: p.kind, name: p.name, lon: hex(p.lon), lat: hex(p.lat) })),
+    };
+
+    entry.routes = {};
+    const land = crater.rover.landingSite;
+    for (const pair of PAIRS[crater.id]) {
+      const a = { lon: land.lon, lat: land.lat, elev: heightProvider.height(land.lon, land.lat) };
+      const b = { lon: land.lon + pair.d[0], lat: land.lat + pair.d[1] };
+      b.elev = heightProvider.height(b.lon, b.lat);
+      const plan = planRoutes({ a, b, waypoints: wps });
+      const describe = (route) =>
+        !route
+          ? null
+          : !route.points
+          ? { refused: true, note: route.notes[0] }
+          : {
+              vertices: route.points.length,
+              distanceM: hex(route.stats.cellDistanceM),
+              gainM: hex(route.stats.gainM),
+              lossM: hex(route.stats.lossM),
+              avgSlopeDeg: hex(route.stats.avgSlopeDeg),
+              maxSlopeDeg: hex(route.stats.maxSlopeDeg),
+              travelSols: hex(route.stats.travelSols),
+              steepCells: route.stats.steepCells,
+              slopeBasis: route.stats.slopeBasis,
+              first: { lon: hex(route.points[0].lon), lat: hex(route.points[0].lat) },
+              last: {
+                lon: hex(route.points[route.points.length - 1].lon),
+                lat: hex(route.points[route.points.length - 1].lat),
+              },
+            };
+      entry.routes[pair.name] = {
+        grid: plan.grid
+          ? { w: plan.grid.w, h: plan.grid.h, stride: plan.grid.stride, cellMetres: hex(plan.grid.cellMetres) }
+          : null,
+        directM: hex(plan.direct.stats.distanceM),
+        directCoverage: hex(plan.direct.stats.coverage),
+        fastest: describe(plan.routes.fastest),
+        safest: describe(plan.routes.safest),
+        notes: plan.notes,
+      };
+    }
+
+    // An endpoint with no elevation coverage must be refused, never routed.
+    const corner = { lon: crater.bounds.west + 0.02, lat: crater.bounds.south + 0.02 };
+    const hasData = !!heightProvider.sample(corner.lon, corner.lat);
+    const refusal = planRoutes({
+      a: { lon: land.lon, lat: land.lat, elev: heightProvider.height(land.lon, land.lat) },
+      b: { ...corner, elev: null },
+      waypoints: wps,
+    });
+    entry.noDataEndpoint = {
+      cornerHasData: hasData,
+      routesProduced: Object.keys(refusal.routes).length,
+      lastNote: refusal.notes[refusal.notes.length - 1],
+    };
+
+    r.craters[crater.id] = entry;
+  }
+
+  setActiveCrater(gale);
+  heightProvider.reset();
+  return r;
+})();
+
 const json = JSON.stringify(out, null, 1);
 
 if (process.argv.includes('--check')) {
@@ -549,6 +715,21 @@ if (process.argv.includes('--check')) {
   console.error('Gale regression check: FAIL');
   for (const k of keys) {
     if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) console.error(`  changed: ${k}`);
+  }
+  // The routing section reads the prepared DEM binaries. If one is absent the
+  // difference is missing data, not changed behaviour: say which.
+  const demNow = b.measureAndPlan && b.measureAndPlan.craters;
+  const demWas = a.measureAndPlan && a.measureAndPlan.craters;
+  if (demNow && demWas) {
+    for (const id of Object.keys(demWas)) {
+      if (demWas[id].demPrepared && demNow[id] && !demNow[id].demPrepared) {
+        console.error(
+          `  note: ${id}'s elevation grid is missing from public${
+            id === 'gale' ? '/data/terrain/crater' : '/data/terrain/jezero'
+          }. Prepare it (see README_JEZERO_MAP.md) and run this again.`
+        );
+      }
+    }
   }
   process.exit(1);
 }

@@ -1,5 +1,5 @@
-import JezeroWorkspace from '@/components/JezeroWorkspace';
+import { redirect } from 'next/navigation';
 
 export default function JezeroPage() {
-  return <JezeroWorkspace />;
+  redirect('/explore/jezero/map');
 }

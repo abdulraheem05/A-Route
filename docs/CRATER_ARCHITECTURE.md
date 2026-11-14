@@ -175,3 +175,6 @@ parsing including the records that must be rejected, landmark resolution, the
 dataset registry, the weather adapter, and the camera framing, imagery zooms,
 detail levels and data URLs that used to be literals in the components.
 Regenerate the expectation only when a change to Gale is intended.
+## MAP / PLAY routes
+
+Each crater has separate deep links: `/explore/<crater>/map` and `/explore/<crater>/play`. The crater root (`/explore/<crater>`) redirects to its MAP route. `CraterWorkspace` receives the route mode and its MAP/PLAY tabs link between endpoints, so a browser refresh retains the selected mode. The shared `backHref` configuration points both workspaces to `/explore` (Destinations).

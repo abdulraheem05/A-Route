@@ -633,6 +633,461 @@
   }
 
   /* --- measurement card -------------------------------------------------- */
+  /* --- loading screens --------------------------------------------------- */
+  .mars-load {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 24px;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 42%, #16100e 0%, #090708 46%, #000 100%);
+    animation: mars-load-in 420ms ease-out both;
+  }
+  @keyframes mars-load-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .mars-load-exit {
+    animation: mars-load-out 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    pointer-events: none;
+  }
+  @keyframes mars-load-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  /* A faint star field from two repeating radial gradients: no image needed. */
+  .mars-load-stars {
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+    background-image:
+      radial-gradient(1px 1px at 18% 24%, rgba(255, 255, 255, 0.5) 50%, transparent 51%),
+      radial-gradient(1px 1px at 72% 16%, rgba(255, 255, 255, 0.38) 50%, transparent 51%),
+      radial-gradient(1px 1px at 41% 71%, rgba(255, 255, 255, 0.3) 50%, transparent 51%),
+      radial-gradient(1.4px 1.4px at 86% 62%, rgba(255, 255, 255, 0.42) 50%, transparent 51%),
+      radial-gradient(1px 1px at 9% 83%, rgba(255, 255, 255, 0.32) 50%, transparent 51%),
+      radial-gradient(1px 1px at 61% 42%, rgba(255, 255, 255, 0.25) 50%, transparent 51%);
+    animation: mars-load-twinkle 7s ease-in-out infinite;
+  }
+  @keyframes mars-load-twinkle {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 0.6; }
+  }
+
+  .mars-load-stage {
+    position: relative;
+    width: 128px;
+    height: 128px;
+    margin-bottom: 30px;
+  }
+  .mars-load-glow {
+    position: absolute;
+    inset: -34%;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(232, 136, 74, 0.26) 0%, rgba(232, 136, 74, 0.08) 42%, transparent 68%);
+    animation: mars-load-breathe 4.5s ease-in-out infinite;
+  }
+  @keyframes mars-load-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.75; }
+    50% { transform: scale(1.09); opacity: 1; }
+  }
+  .mars-load-planet {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    overflow: hidden;
+    /* Limb brightening on the lit side, atmosphere at the edge. */
+    box-shadow:
+      inset -14px -10px 34px -8px rgba(0, 0, 0, 0.92),
+      inset 6px 5px 22px -6px rgba(255, 203, 150, 0.4),
+      0 0 26px -4px rgba(232, 136, 74, 0.45);
+    background: radial-gradient(circle at 34% 30%, #e07a42 0%, #b4502a 38%, #7b2f19 68%, #40160d 100%);
+  }
+  /* Bands of albedo, scrolled sideways to read as rotation. */
+  .mars-load-surface {
+    position: absolute;
+    inset: -2px;
+    width: 300%;
+    background-image:
+      radial-gradient(28px 16px at 12% 32%, rgba(84, 32, 18, 0.55) 0%, transparent 60%),
+      radial-gradient(40px 13px at 34% 58%, rgba(60, 22, 12, 0.5) 0%, transparent 62%),
+      radial-gradient(20px 20px at 52% 24%, rgba(247, 196, 150, 0.22) 0%, transparent 58%),
+      radial-gradient(34px 12px at 68% 68%, rgba(70, 26, 14, 0.5) 0%, transparent 60%),
+      radial-gradient(16px 11px at 82% 40%, rgba(255, 229, 207, 0.2) 0%, transparent 58%),
+      radial-gradient(44px 14px at 94% 54%, rgba(72, 28, 15, 0.42) 0%, transparent 62%);
+    animation: mars-load-spin 26s linear infinite;
+  }
+  @keyframes mars-load-spin {
+    from { transform: translateX(0); }
+    to { transform: translateX(-66.666%); }
+  }
+  .mars-load-shadow {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: linear-gradient(105deg, transparent 34%, rgba(0, 0, 0, 0.62) 78%, rgba(0, 0, 0, 0.88) 100%);
+  }
+
+  .mars-load-eyebrow {
+    font-size: 9.5px;
+    letter-spacing: 0.38em;
+    text-transform: uppercase;
+    color: var(--g-accent);
+  }
+  .mars-load-title {
+    margin-top: 12px;
+    font-size: clamp(15px, 3.4vw, 22px);
+    font-weight: 300;
+    letter-spacing: 0.17em;
+    color: #f2e9e1;
+  }
+  .mars-load-sub {
+    margin-top: 9px;
+    font-size: 11.5px;
+    letter-spacing: 0.05em;
+    color: rgba(242, 233, 225, 0.5);
+  }
+
+  .mars-load-sweep {
+    position: relative;
+    margin-top: 26px;
+    width: min(230px, 60vw);
+    height: 1px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  .mars-load-sweep > span {
+    position: absolute;
+    inset-block: 0;
+    width: 45%;
+    background: linear-gradient(90deg, transparent, var(--g-accent), transparent);
+    animation: mars-load-sweep 1.5s ease-in-out infinite;
+  }
+  @keyframes mars-load-sweep {
+    from { left: -45%; }
+    to { left: 100%; }
+  }
+
+  .mars-load-stages {
+    margin-top: 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    text-align: left;
+    font-size: 11px;
+  }
+  .mars-load-stages > li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: rgba(242, 233, 225, 0.34);
+    transition: color 300ms ease;
+  }
+  .mars-load-stages > li[data-done='true'] {
+    color: rgba(242, 233, 225, 0.85);
+  }
+  .mars-load-stages > li[data-running='true'] {
+    color: var(--g-accent);
+  }
+  .mars-load-tick {
+    width: 6px;
+    height: 6px;
+    flex: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    transition: background 300ms ease, box-shadow 300ms ease;
+  }
+  li[data-done='true'] > .mars-load-tick {
+    background: var(--g-accent);
+  }
+  li[data-running='true'] > .mars-load-tick {
+    background: var(--g-accent);
+    animation: mars-load-tick 1.2s ease-in-out infinite;
+  }
+  @keyframes mars-load-tick {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232, 136, 74, 0.5); }
+    50% { box-shadow: 0 0 0 4px rgba(232, 136, 74, 0); }
+  }
+  .mars-load-detail {
+    font-family: var(--font-mono, ui-monospace), monospace;
+    font-size: 9.5px;
+    color: rgba(242, 233, 225, 0.4);
+  }
+
+  .mars-load-note {
+    margin-top: 20px;
+    max-width: 30rem;
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: rgba(242, 233, 225, 0.38);
+  }
+
+  .mars-load-error {
+    margin-top: 24px;
+    max-width: 30rem;
+    padding: 14px 16px;
+    border: 1px solid rgba(251, 113, 133, 0.35);
+    border-radius: 10px;
+    background: rgba(70, 12, 24, 0.4);
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: #ffe4e6;
+  }
+  .mars-load-error-head {
+    margin-bottom: 4px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #fda4af;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mars-load-surface,
+    .mars-load-glow,
+    .mars-load-stars,
+    .mars-load-sweep > span,
+    li[data-running='true'] > .mars-load-tick {
+      animation: none;
+    }
+  }
+
+  /* --- measure & plan ---------------------------------------------------- */
+  .plan-seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--g-line);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .plan-seg > button {
+    padding: 6px 4px;
+    border-radius: 6px;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--g-text-faint);
+    transition: background 160ms ease, color 160ms ease;
+  }
+  .plan-seg > button:hover {
+    color: var(--g-text);
+  }
+  .plan-seg > button[data-active='true'] {
+    background: var(--g-active);
+    color: var(--g-accent);
+  }
+
+  .plan-end {
+    border: 1px solid var(--g-line);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+  .plan-end[data-armed='true'] {
+    border-color: rgba(232, 136, 74, 0.55);
+    box-shadow: 0 0 0 1px rgba(232, 136, 74, 0.18), 0 0 16px -6px rgba(232, 136, 74, 0.5);
+  }
+  .plan-end-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 4px;
+  }
+  .plan-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    flex: none;
+  }
+  .plan-mini {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--g-text-faint);
+    padding: 1px 5px;
+    border: 1px solid var(--g-line);
+    border-radius: 5px;
+    transition: color 140ms ease, border-color 140ms ease;
+  }
+  .plan-mini:hover {
+    color: var(--g-text);
+    border-color: var(--g-text-faint);
+  }
+
+  .plan-live {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 8px 8px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    background: rgba(232, 136, 74, 0.08);
+    border: 1px solid rgba(232, 136, 74, 0.18);
+    font-size: 10.5px;
+    color: var(--g-text-dim);
+    animation: plan-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes plan-pulse {
+    0%, 100% { border-color: rgba(232, 136, 74, 0.18); }
+    50% { border-color: rgba(232, 136, 74, 0.42); }
+  }
+
+  .plan-search {
+    position: relative;
+  }
+  .plan-input {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid var(--g-line);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.35);
+    font-size: 11.5px;
+    color: var(--g-text);
+  }
+  .plan-input:focus {
+    outline: none;
+    border-color: rgba(232, 136, 74, 0.5);
+  }
+  .plan-results {
+    position: absolute;
+    z-index: 40;
+    left: 0;
+    right: 0;
+    top: calc(100% + 3px);
+    max-height: 184px;
+    overflow-y: auto;
+    border: 1px solid var(--g-line);
+    border-radius: 8px;
+    background: var(--g-panel-solid);
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.8);
+    animation: plan-drop 140ms ease-out both;
+  }
+  @keyframes plan-drop {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: none; }
+  }
+  .plan-results > li > button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 5px 8px;
+    transition: background 120ms ease;
+  }
+  .plan-results > li > button:hover {
+    background: var(--g-hover);
+  }
+  .plan-result-name {
+    display: block;
+    font-size: 11.5px;
+    color: var(--g-text);
+  }
+  .plan-result-meta {
+    display: block;
+    font-size: 9.5px;
+    font-family: var(--font-mono, ui-monospace), monospace;
+    color: var(--g-text-faint);
+  }
+  .plan-empty {
+    padding: 6px 8px;
+    font-size: 11px;
+    color: var(--g-text-faint);
+  }
+
+  .plan-gain { color: var(--g-ok); }
+  .plan-loss { color: var(--g-warn); }
+  .plan-over { color: var(--g-warn); }
+
+  .plan-route {
+    border: 1px solid var(--g-line);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 180ms ease, background 180ms ease;
+  }
+  .plan-route[data-active='true'] {
+    border-color: rgba(232, 136, 74, 0.45);
+    background: rgba(232, 136, 74, 0.06);
+  }
+  .plan-route-head {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 8px;
+  }
+  .plan-swatch {
+    width: 10px;
+    height: 3px;
+    border-radius: 2px;
+    flex: none;
+  }
+  .plan-route-name {
+    font-size: 11.5px;
+    color: var(--g-text);
+    flex: 1;
+    text-align: left;
+  }
+  .plan-route-figure {
+    font-size: 11px;
+    color: var(--g-text-dim);
+  }
+  .plan-route-eye {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px 6px;
+    font-size: 10px;
+    color: var(--g-text-faint);
+    cursor: pointer;
+  }
+  .plan-route-eye input {
+    accent-color: var(--g-accent);
+  }
+
+  .plan-slider {
+    display: block;
+    font-size: 10.5px;
+    color: var(--g-text-dim);
+  }
+  .plan-slider-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .plan-slider input[type='range'] {
+    width: 100%;
+    height: 14px;
+    accent-color: var(--g-accent);
+    background: transparent;
+  }
+
+  .plan-legend {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 9px;
+    border: 1px solid var(--g-line);
+    border-radius: 8px;
+    background: var(--g-panel);
+    backdrop-filter: blur(12px);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--g-text-dim);
+  }
+  .plan-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .plan-legend-item[data-dim='true'] {
+    opacity: 0.4;
+  }
+
   .gale-measure {
     position: absolute;
     bottom: calc(var(--g-foot) + var(--g-gap));

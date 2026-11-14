@@ -5,6 +5,6 @@
 import CraterWorkspace from '@/components/CraterWorkspace';
 import gale from '@/lib/mars/craters/gale';
 
-export default function GaleWorkspace() {
-  return <CraterWorkspace crater={gale} />;
+export default function GaleWorkspace({ mode = 'MAP' }) {
+  return <CraterWorkspace crater={gale} mode={mode} />;
 }

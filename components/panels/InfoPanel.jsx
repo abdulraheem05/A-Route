@@ -1,17 +1,18 @@
 'use client';
 // Contextual inspector.
 //
-// Three stacked sections — INSPECT, WEATHER, GEOLOGY — each a collapsed box
-// that opens only when its chevron is clicked, so at most one body of text is
-// ever on screen. Which one is open is the existing `infoTab` state, so
-// selecting something on the map still opens Inspect automatically.
+// Four stacked sections — INSPECT, MEASURE & PLAN, WEATHER, GEOLOGY — each a
+// collapsed box that opens only when its chevron is clicked, so at most one
+// body of text is ever on screen. Which one is open is the existing `infoTab`
+// state, so selecting something on the map still opens Inspect automatically.
 //
 // Everything a value needs in order to be read honestly travels with it: the
 // dataset it came from and whether it is measured, derived, interpreted or
 // simulated. Long-form provenance now lives in disclosures instead of being
-// printed by default. Measurement has moved out of this panel entirely and
-// into a floating card (components/Explorer.jsx).
+// printed by default. Measurement is no longer part of Inspect: it is the
+// direct line inside MEASURE & PLAN, which also plans terrain-aware routes.
 import { useMemo } from 'react';
+import MeasurePlanPanel from '@/components/panels/MeasurePlanPanel';
 import { NAME_CLASS, resolveLandmarks, waypointIndexAtSol } from '@/lib/data/landmarks';
 import { nearestWaypoint } from '@/lib/data/roverAdapter';
 import { useCrater } from '@/lib/mars/CraterContext';
@@ -467,8 +468,7 @@ function DefaultCard() {
   }, [crater]);
   const terrain = useStore((s) => s.terrain);
   const rover = useStore((s) => s.rover);
-  const toggleMeasure = useStore((s) => s.toggleMeasure);
-  const measuring = useStore((s) => s.measure.active);
+  const startPicking = useStore((s) => s.startPicking);
   const last = rover.waypoints[rover.waypoints.length - 1];
 
   const toRover = () => {
@@ -504,13 +504,9 @@ function DefaultCard() {
             <Icon name="crater" size={13} />
             Whole crater
           </button>
-          <button
-            type="button"
-            className={`btn col-span-2 ${measuring ? 'btn-accent' : ''}`}
-            onClick={toggleMeasure}
-          >
+          <button type="button" className="btn col-span-2" onClick={() => startPicking('start')}>
             <Icon name="ruler" size={13} />
-            {measuring ? 'Measuring — click two points' : 'Measure distance'}
+            Measure &amp; plan a route
           </button>
         </div>
       </Block>
@@ -628,6 +624,7 @@ export default function InfoPanel() {
   const waypoints = useStore((s) => s.rover.waypoints);
   const sol = useStore((s) => s.sol);
   const weatherStatus = useStore((s) => s.weather.status);
+  const plan = useStore((s) => s.plan);
   const setValue = useStore((s) => s.setValue);
 
   if (!open) return null;
@@ -641,6 +638,18 @@ export default function InfoPanel() {
     : selection.type === 'landmark'
     ? 'Named place'
     : 'Terrain point';
+
+  const planHint = plan.result
+    ? plan.result.routes && plan.result.routes[plan.active] && plan.result.routes[plan.active].points
+      ? `${plan.result.routes[plan.active].label} route`
+      : 'Direct line'
+    : plan.picking
+    ? `Setting ${plan.picking}`
+    : plan.start && plan.end
+    ? 'Two points set'
+    : plan.start || plan.end
+    ? 'One point set'
+    : 'Distance and routes';
 
   const weatherHint =
     weatherStatus === 'ready'
@@ -671,6 +680,10 @@ export default function InfoPanel() {
         {selection && selection.type === 'point' && <PointCard sel={selection} />}
         {selection && selection.type === 'waypoint' && <WaypointCard sel={selection} />}
         {selection && selection.type === 'landmark' && <LandmarkCard sel={selection} />}
+      </Acc>
+
+      <Acc id="plan" icon="ruler" title="Measure &amp; Plan" hint={planHint} open={tab === 'plan'} onToggle={toggle}>
+        <MeasurePlanPanel />
       </Acc>
 
       <Acc id="weather" icon="weather" title="Weather" hint={weatherHint} open={tab === 'weather'} onToggle={toggle}>

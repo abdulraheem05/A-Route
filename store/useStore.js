@@ -21,7 +21,19 @@ const craterScopedState = () => ({
   },
   sol: null,
   weather: { status: 'loading', origin: null, retrieved: null, records: [], bySol: new Map(), anyWind: false, error: null },
-  measure: { active: false, points: [] },
+  plan: {
+    mode: 'terrain',
+    picking: null,
+    start: null,
+    end: null,
+    result: null,
+    computing: false,
+    error: null,
+    active: 'fastest',
+    show: { fastest: true, safest: true },
+    overrides: {},
+    profileCursor: null,
+  },
 });
 
 export const useStore = create((set, get) => ({
@@ -58,6 +70,10 @@ export const useStore = create((set, get) => ({
   cursor: null, // { lon, lat, elev, datasetId, resM }
   selection: null, // { type: 'point' | 'waypoint' | 'landmark', ... }
   camera: { dist: 250, azimuth: 0, polar: 0.8 },
+  // Set once the WebGL context exists, from Viewport's onCreated. The loading
+  // gate waits on this rather than guessing from the camera, whose distance
+  // has a starting value before any frame has been drawn.
+  rendererReady: false,
   select: (selection) => set({ selection, infoOpen: true, infoTab: 'selection' }),
 
   // --- rover -----------------------------------------------------------
@@ -79,15 +95,62 @@ export const useStore = create((set, get) => ({
   weather: { status: 'loading', origin: null, retrieved: null, records: [], bySol: new Map(), anyWind: false, error: null },
   setWeather: (patch) => set((s) => ({ weather: { ...s.weather, ...patch } })),
 
-  // --- measurement -----------------------------------------------------
-  measure: { active: false, points: [] },
-  toggleMeasure: () => set((s) => ({ measure: { active: !s.measure.active, points: [] } })),
-  addMeasurePoint: (p) =>
+  // --- measure & plan ---------------------------------------------------
+  // One pair of points serves both the measurement (the direct line between
+  // them) and route planning. `picking` is which end the next terrain click
+  // sets; `mode` is how the viewer is choosing points.
+  plan: {
+    mode: 'terrain', // 'terrain' | 'known'
+    picking: null, // null | 'start' | 'end'
+    start: null, // { lon, lat, elev, label, kind }
+    end: null,
+    result: null, // { routes, direct, notes, assumptions, gridInfo } from planRoutes
+    computing: false,
+    error: null,
+    active: 'fastest', // which route the stats and profile describe
+    show: { fastest: true, safest: true },
+    overrides: {}, // viewer's changes to the planning assumptions
+    profileCursor: null, // { d, lon, lat, h } while hovering the profile
+  },
+  setPlan: (patch) => set((s) => ({ plan: { ...s.plan, ...patch } })),
+  setPlanMode: (mode) => set((s) => ({ plan: { ...s.plan, mode, picking: null } })),
+
+  // Opens the panel on Measure & Plan and arms the next terrain click.
+  startPicking: (which) =>
+    set((s) => ({
+      plan: { ...s.plan, mode: 'terrain', picking: which },
+      infoOpen: true,
+      infoTab: 'plan',
+    })),
+  stopPicking: () => set((s) => ({ plan: { ...s.plan, picking: null } })),
+
+  // Sets one end. Any computed routes are dropped: they describe the old pair.
+  setPlanPoint: (which, point) =>
     set((s) => {
-      const pts = s.measure.points.length >= 2 ? [p] : [...s.measure.points, p];
-      return { measure: { ...s.measure, points: pts }, infoOpen: true, infoTab: 'selection' };
+      const next = { ...s.plan, [which]: point, result: null, error: null, profileCursor: null };
+      // Picking a start with no end yet moves straight on to the end, which is
+      // what someone laying out a route almost always wants next.
+      next.picking = which === 'start' && !s.plan.end ? 'end' : null;
+      return { plan: next, infoOpen: true, infoTab: 'plan' };
     }),
-  clearMeasure: () => set((s) => ({ measure: { ...s.measure, points: [] } })),
+  clearPlanPoint: (which) =>
+    set((s) => ({ plan: { ...s.plan, [which]: null, result: null, error: null, profileCursor: null } })),
+  clearPlan: () =>
+    set((s) => ({
+      plan: { ...s.plan, start: null, end: null, result: null, error: null, picking: null, profileCursor: null },
+    })),
+
+  setPlanResult: (result) => set((s) => ({ plan: { ...s.plan, result, computing: false, error: null } })),
+  setPlanComputing: (computing) => set((s) => ({ plan: { ...s.plan, computing } })),
+  setPlanError: (error) => set((s) => ({ plan: { ...s.plan, error, computing: false } })),
+  setActiveRoute: (active) => set((s) => ({ plan: { ...s.plan, active } })),
+  toggleRouteVisible: (id) =>
+    set((s) => ({ plan: { ...s.plan, show: { ...s.plan.show, [id]: !s.plan.show[id] } } })),
+  // Changing an assumption invalidates the routes it was used to compute.
+  setPlanOverride: (key, value) =>
+    set((s) => ({ plan: { ...s.plan, overrides: { ...s.plan.overrides, [key]: value }, result: null } })),
+  resetPlanOverrides: () => set((s) => ({ plan: { ...s.plan, overrides: {}, result: null } })),
+  setProfileCursor: (profileCursor) => set((s) => ({ plan: { ...s.plan, profileCursor } })),
 
   // --- crater switching -------------------------------------------------
   resetCraterState: () => set(craterScopedState()),

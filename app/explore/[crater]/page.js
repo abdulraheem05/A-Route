@@ -6,13 +6,13 @@
 // component. An id that is not registered is a 404.
 // No generateStaticParams: /explore/gale has its own page, and pre-generating
 // the same path from both would be a build-time collision. Rendered on demand.
-import { notFound } from 'next/navigation';
-import CraterWorkspace from '@/components/CraterWorkspace';
+import { notFound, redirect } from 'next/navigation';
 import { getCrater } from '@/lib/mars/craters';
 
+// Mirrors /explore/gale and /explore/jezero, which redirect to their MAP.
 export default async function CraterPage({ params }) {
   const { crater: id } = await params;
   const crater = getCrater(id);
   if (!crater) notFound();
-  return <CraterWorkspace crater={crater} />;
+  redirect(`/explore/${crater.id}/map`);
 }
