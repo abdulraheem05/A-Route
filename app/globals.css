@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   A-ROUTE wordmark font.
+
+   Drop your Artemus file into /public/fonts/ as Artemus.woff2 (preferred) or
+   Artemus.ttf. Nothing else needs to change — the family name here matches
+   BRAND.font.family in lib/brand.js, and the app detects at runtime whether
+   the face actually loaded.
+
+   Until the file exists the browser logs a 404 for these URLs and the app
+   falls back to a neutral system stack rather than guessing at a lookalike
+   display font. A notice appears in the corner in development only.
+   --------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Artemus';
+  src: url('/fonts/Artemus.woff2') format('woff2'),
+       url('/fonts/Artemus.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  --font-fallback: 'Helvetica Neue', 'Inter', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  --a-route-focus: rgba(247, 179, 71, 0.95);
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    background-color: #000000;
+    color: #efe7df;
+  }
+
+  body {
+    font-family: var(--font-fallback);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
+  }
+
+  ::selection {
+    background: rgba(232, 131, 43, 0.3);
+    color: #fdf3e6;
+  }
+
+  /* One consistent, clearly visible focus treatment for every control. */
+  :focus-visible {
+    outline: 1px solid var(--a-route-focus);
+    outline-offset: 3px;
+  }
+
+  canvas {
+    display: block;
+    touch-action: pan-y;
+  }
+}
+
+@layer components {
+  /* Thin, dark scrollbar for the destination panel. */
+  .a-route-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200, 82, 31, 0.5) transparent;
+  }
+
+  .a-route-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .a-route-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .a-route-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(200, 82, 31, 0.45);
+    border-radius: 9999px;
+  }
+
+  /* Faint survey-grid texture used behind missing destination thumbnails. */
+  .a-route-grid-texture {
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        rgba(253, 243, 230, 0.05) 0px,
+        rgba(253, 243, 230, 0.05) 1px,
+        transparent 1px,
+        transparent 22px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(253, 243, 230, 0.05) 0px,
+        rgba(253, 243, 230, 0.05) 1px,
+        transparent 1px,
+        transparent 22px
+      );
+  }
+}
+
+/* CSS-driven motion only; the 3D intro handles reduced motion in JS by
+   jumping straight to its final frame. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
