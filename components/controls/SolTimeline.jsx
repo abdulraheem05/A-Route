@@ -9,11 +9,15 @@
 // drive-end position at or before the chosen sol, and positions are never
 // interpolated between records.
 import { useMemo } from 'react';
-import { SOL_LANDMARKS, waypointIndexAtSol } from '@/lib/data/landmarks';
+import { waypointIndexAtSol } from '@/lib/data/landmarks';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { cameraApi } from '@/lib/terrain/cameraApi';
 import { useStore } from '@/store/useStore';
 
 export default function SolTimeline() {
+  const crater = useCrater();
+  const roverName = (crater.rover && crater.rover.name) || 'the rover';
+  const solLandmarks = (crater.landmarks && crater.landmarks.solKeyed) || [];
   const waypoints = useStore((s) => s.rover.waypoints);
   const status = useStore((s) => s.rover.status);
   const sol = useStore((s) => s.sol);
@@ -32,7 +36,14 @@ export default function SolTimeline() {
   if (status === 'loading') {
     return (
       <div className="sol-timeline flex items-center px-3">
-        <span className="label animate-soft-pulse">Loading Curiosity&rsquo;s traverse from NASA</span>
+        <span className="label animate-soft-pulse">Loading {roverName}&rsquo;s traverse from NASA</span>
+      </div>
+    );
+  }
+  if (status === 'unavailable') {
+    return (
+      <div className="sol-timeline flex items-center px-3">
+        <span className="label">No rover mission for this crater — timeline disabled</span>
       </div>
     );
   }
@@ -47,7 +58,7 @@ export default function SolTimeline() {
   const [minSol, maxSol] = range;
   const wp = index >= 0 ? waypoints[index] : null;
   const pct = (s) => ((s - minSol) / Math.max(1, maxSol - minSol)) * 100;
-  const marks = SOL_LANDMARKS.filter((l) => l.tier <= 1 && typeof l.sol === 'number' && l.sol <= maxSol);
+  const marks = solLandmarks.filter((l) => l.tier <= 1 && typeof l.sol === 'number' && l.sol <= maxSol);
 
   const step = (dir) => {
     if (index < 0) return;

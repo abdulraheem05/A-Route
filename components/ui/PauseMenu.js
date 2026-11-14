@@ -28,7 +28,7 @@ export default function PauseMenu() {
             <div className="text-[10px] uppercase tracking-hud text-mars-300">Paused</div>
             <div className="text-xl font-light">Mission log</div>
           </div>
-          <button type="button" className="btn-primary" onClick={resume}><Play size={12} /> Resume</button>
+          <button type="button" className="btn-primary" onClick={resume}> Resume</button>
         </header>
 
         <div className="thin-scroll flex-1 overflow-y-auto px-6 py-4">

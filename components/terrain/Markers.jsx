@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Line } from '@react-three/drei';
 import { resolveLandmarks } from '@/lib/data/landmarks';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { cameraApi } from '@/lib/terrain/cameraApi';
 import { scenePosition } from '@/lib/terrain/place';
 import { useStore } from '@/store/useStore';
@@ -30,6 +31,7 @@ function Pin({ position, color }) {
 }
 
 export function SelectionMarker() {
+  const landmarkSet = useCrater().landmarks;
   const selection = useStore((s) => s.selection);
   const waypoints = useStore((s) => s.rover.waypoints);
   const exaggeration = useStore((s) => s.exaggeration);
@@ -44,12 +46,12 @@ export function SelectionMarker() {
       return w ? scenePosition(w.lon, w.lat, w.elev, exaggeration, 0) : null;
     }
     if (selection.type === 'landmark') {
-      const l = resolveLandmarks(waypoints).find((x) => x.id === selection.id);
+      const l = resolveLandmarks(waypoints, landmarkSet).find((x) => x.id === selection.id);
       return l ? scenePosition(l.lon, l.lat, l.elev ?? null, exaggeration, 0) : null;
     }
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selection, waypoints, exaggeration, terrainVersion, patch]);
+  }, [selection, waypoints, exaggeration, terrainVersion, patch, landmarkSet]);
 
   if (!position) return null;
   return <Pin position={position} color="#ffffff" />;

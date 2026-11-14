@@ -55,7 +55,12 @@ except ImportError:  # pragma: no cover
 R_MARS = 3396190.0
 M_PER_DEG = math.pi * R_MARS / 180.0
 GALE = dict(west=135.1842593, east=139.2413012, south=-6.5732988, north=-2.8077809)
+# Jezero display region = extent of the Mars Trek CTX mosaic Jezero_CTX_BlockAdj_dd,
+# read from its WMTSCapabilities ows:BoundingBox. Matching it exactly means the
+# prepared DEM and the imagery cover the same ground, as they do for Gale.
+JEZERO = dict(west=75.1537692, east=78.8717121, south=15.9058484, north=19.4453003)
 BRADBURY = dict(lon=137.441633, lat=-4.589467, elev=-4500.971)
+JEZERO_LANDING = dict(lon=77.45088572, lat=18.44462715, elev=-2569.91)
 NODATA = -32768.0
 
 MARS_GEO = CRS.from_proj4("+proj=longlat +a=3396190 +b=3396190 +no_defs")
@@ -78,6 +83,14 @@ SOURCES = {
         "url": None,
         "source_page": "https://zenodo.org/record/5808354",
         "citation": "Persaud, D.M., Putri, A.D.R., Muller, J.-P., 2021, Zenodo, doi:10.5281/zenodo.5808354.",
+        "default_res": 100.0,
+    },
+    "jezero_ctxdem": {
+        "dataset_id": "JZ20",
+        "name": "USGS Jezero CTX DEM Mosaic (20 m/pixel)",
+        "url": None,
+        "source_page": "https://astrogeology.usgs.gov/search/map/mars_2020_science_investigation_ctx_dem_mosaic",
+        "citation": "USGS Astrogeology, Mars 2020 Science Investigation CTX DEM Mosaic, Jezero Crater, 20 m/pixel.",
         "default_res": 100.0,
     },
 }
@@ -156,34 +169,37 @@ def sample_point(src, lon, lat):
 
 
 def cmd_crater(args):
+    region = JEZERO if args.region == "jezero" else GALE
+    landing_point = JEZERO_LANDING if args.region == "jezero" else BRADBURY
+    output_name = args.region if args.region == "jezero" else "crater"
     spec = SOURCES[args.source]
     path = args.input or spec["url"]
     if not path:
         sys.exit("--input is required for this source (see scripts/download_data.py hrsc).")
     res_m = args.res or spec["default_res"]
     step = res_m / M_PER_DEG
-    width = int(math.ceil((GALE["east"] - GALE["west"]) / step))
-    height = int(math.ceil((GALE["north"] - GALE["south"]) / step))
+    width = int(math.ceil((region["east"] - region["west"]) / step))
+    height = int(math.ceil((region["north"] - region["south"]) / step))
     print(f"Source : {spec['name']}\n         {path}")
     print(f"Grid   : {width} x {height} at {res_m:g} m ({step:.6f} deg)")
     if path.startswith("http"):
-        print("Reading remotely; only the Gale window is transferred. This can take a few minutes.")
+        print("Reading remotely; only the selected region window is transferred. This can take a few minutes.")
 
     src = open_source(path)
     native = abs(src.transform.a) if not src.crs.is_geographic else abs(src.transform.a) * M_PER_DEG
     resampling = Resampling.average if res_m > 1.5 * native else Resampling.bilinear
-    with warped(src, GALE["west"], GALE["north"], step, step, width, height, resampling) as vrt:
+    with warped(src, region["west"], region["north"], step, step, width, height, resampling) as vrt:
         arr = clean(vrt.read(1))
     valid = arr != NODATA
     if not valid.any():
-        sys.exit("The source has no data inside the Gale window.")
+        sys.exit("The source has no data inside the selected region window.")
 
-    landing_raw = sample_point(src, BRADBURY["lon"], BRADBURY["lat"])
+    landing_raw = sample_point(src, landing_point["lon"], landing_point["lat"])
     if args.offset:
         arr[valid] += np.float32(args.offset)
         print(f"Applied constant vertical offset of {args.offset:+g} m (recorded in meta.json).")
 
-    out_dir = os.path.join(OUT, "crater")
+    out_dir = os.path.join(OUT, output_name)
     os.makedirs(out_dir, exist_ok=True)
     levels = []
     level, k = arr, 0
@@ -195,8 +211,8 @@ def cmd_crater(args):
                 file=name,
                 width=int(level.shape[1]),
                 height=int(level.shape[0]),
-                west=GALE["west"],
-                north=GALE["north"],
+                west=region["west"],
+                north=region["north"],
                 dx=step * 2**k,
                 dy=step * 2**k,
                 res_m=res_m * 2**k,
@@ -211,9 +227,9 @@ def cmd_crater(args):
     landing = None
     if landing_raw is not None:
         val = landing_raw + (args.offset or 0.0)
-        landing = dict(sampled_m=val, expected_m=BRADBURY["elev"], diff_m=val - BRADBURY["elev"])
+        landing = dict(sampled_m=val, expected_m=landing_point["elev"], diff_m=val - landing_point["elev"])
         print(
-            f"Datum check at Bradbury Landing: {val:.1f} m here vs {BRADBURY['elev']:.1f} m in NASA's waypoint file "
+            f"Datum check at selected landing site: {val:.1f} m here vs {landing_point['elev']:.1f} m in NASA's waypoint file "
             f"(difference {landing['diff_m']:+.1f} m)."
         )
         if abs(landing["diff_m"]) > 50:
@@ -240,10 +256,10 @@ def cmd_crater(args):
         valid_fraction=float(valid.mean()),
         applied_vertical_offset_m=float(args.offset or 0.0),
         landing_check=landing,
-        bounds=GALE,
+        bounds=region,
         levels=levels,
         created=datetime.datetime.utcnow().isoformat() + "Z",
-        tool="scripts/prepare_terrain.py crater",
+        tool=f"scripts/prepare_terrain.py crater --region {args.region}",
     )
     with open(os.path.join(out_dir, "meta.json"), "w") as f:
         json.dump(meta, f, indent=2)
@@ -355,12 +371,13 @@ def main():
 
     c = sub.add_parser("crater", help="crater-wide elevation grid")
     c.add_argument("--source", choices=sorted(SOURCES), default="blend200")
+    c.add_argument("--region", choices=["gale", "jezero"], default="gale", help="output region; jezero uses Jezero geographic bounds")
     c.add_argument("--input", help="local file or URL (overrides the source default)")
     c.add_argument("--res", type=float, help="grid spacing in metres")
     c.add_argument("--offset", type=float, default=0.0, help="constant vertical offset in metres (recorded in meta.json)")
     c.set_defaults(func=cmd_crater)
 
-    r = sub.add_parser("rover", help="rover-region tiles from the 1 m MSL DEM")
+    r = sub.add_parser("rover", help="rover-region tiles from the 1 m MSL DEM (Gale only)")
     r.add_argument("--input", help="path to MSL_Gale_DEM_Mosaic_1m_v3.tif")
     r.add_argument("--res", type=float, nargs="+", default=[16.0], help="one or more grid spacings in metres")
     r.set_defaults(func=cmd_rover)

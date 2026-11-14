@@ -5,7 +5,10 @@
 // where you are looking (north, zoom, tilt, whole crater, rover). Every
 // button calls an existing camera or store action — there are no placeholders
 // here, so a route-planning tool is deliberately absent until routing exists.
-import { BRADBURY } from '@/lib/mars/constants';
+//
+// The landing site, the home view and the rover's name come from the crater
+// configuration; Gale's are Bradbury Landing, 137.7°E/5.0°S and Curiosity.
+import { useCrater } from '@/lib/mars/CraterContext';
 import { waypointIndexAtSol } from '@/lib/data/landmarks';
 import { cameraApi } from '@/lib/terrain/cameraApi';
 import { useStore } from '@/store/useStore';
@@ -39,6 +42,11 @@ const svg = {
 };
 
 export default function NavControls() {
+  const crater = useCrater();
+  const roverName = (crater.rover && crater.rover.name) || 'the rover';
+  const landing = crater.rover && crater.rover.landingSite;
+  const home = crater.view.home;
+  const fitDistanceKm = crater.view.fitDistanceKm;
   const azimuth = useStore((s) => s.camera.azimuth);
   const polar = useStore((s) => s.camera.polar);
   const infoOpen = useStore((s) => s.infoOpen);
@@ -49,7 +57,7 @@ export default function NavControls() {
     const s = useStore.getState();
     const wps = s.rover.waypoints;
     if (!wps.length) {
-      cameraApi.flyTo(BRADBURY.lon, BRADBURY.lat, 6);
+      if (landing) cameraApi.flyTo(landing.lon, landing.lat, 6);
       return;
     }
     const i = s.sol === null ? wps.length - 1 : Math.max(0, waypointIndexAtSol(wps, s.sol));
@@ -107,13 +115,13 @@ export default function NavControls() {
             <path d="M2 11 L8 14 L14 11 M2 8 L8 11 L14 8 L8 5 Z" />
           </svg>
         </Tool>
-        <Tool tip="Fit the whole crater" onClick={() => cameraApi.flyTo(137.7, -5.0, 260)}>
+        <Tool tip="Fit the whole crater" onClick={() => cameraApi.flyTo(home.lon, home.lat, fitDistanceKm)}>
           <svg {...svg}>
             <circle cx="8" cy="8" r="5.6" />
             <circle cx="8" cy="8" r="1.4" />
           </svg>
         </Tool>
-        <Tool tip="Go to Curiosity" onClick={toRover}>
+        <Tool tip={`Go to ${roverName}`} onClick={toRover}>
           <svg {...svg}>
             <rect x="3.5" y="5.5" width="9" height="4" rx="0.8" />
             <circle cx="4.5" cy="11.5" r="1.3" />

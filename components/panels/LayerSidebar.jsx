@@ -9,7 +9,7 @@
 // All visibility still goes through the existing store actions
 // (setBaseLayer / toggleOverlay / toggleShow / setValue) — no new state.
 import { useState } from 'react';
-import { UNAVAILABLE_LAYERS } from '@/lib/data/registry';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { useStore } from '@/store/useStore';
 import { DatasetLink, EvidenceBadge } from '@/components/panels/ui';
 
@@ -213,7 +213,7 @@ function Group({ id, icon, title, open, onToggle, visible, total, onToggleAll, c
 /**
  * One layer row. `mode` is 'toggle' for independent layers, 'radio' for the
  * mutually exclusive base imagery, and 'unavailable' for datasets that do not
- * exist for Gale — those are shown, never faked.
+ * exist for the crater being explored — those are shown, never faked.
  */
 function Layer({
   id,
@@ -312,6 +312,18 @@ function Ramp({ gradient, left, right, middle }) {
 }
 
 export default function LayerSidebar() {
+  const crater = useCrater();
+  const imageryCfg = crater.imagery || {};
+  const layers = imageryCfg.layers || {};
+  const baseLayerKey = imageryCfg.baseLayerKey || 'ctx';
+  const baseTrekLayer = layers[baseLayerKey] || null;
+  const overlayKey = imageryCfg.detailOverlayKey || null;
+  const overlayTrekLayer = overlayKey ? layers[overlayKey] || null : null;
+  const roverName = (crater.rover && crater.rover.name) || 'Rover';
+  const roverCfg = crater.rover || null;
+  const geologyCfg = crater.geology || {};
+  const unavailableLayers = crater.unavailableLayers || [];
+  const landmarkSet = crater.landmarks || {};
   const open = useStore((s) => s.sidebarOpen);
   const baseLayer = useStore((s) => s.baseLayer);
   const hirise = useStore((s) => s.hirise);
@@ -328,7 +340,7 @@ export default function LayerSidebar() {
   const setValue = useStore((s) => s.setValue);
 
   const [groups, setGroups] = useState({ surface: true, analysis: true, exploration: true, geology: false });
-  const [selected, setSelected] = useState('ctx');
+  const [selected, setSelected] = useState(baseLayerKey);
 
   if (!open) return null;
 
@@ -337,7 +349,7 @@ export default function LayerSidebar() {
 
   const hasElevation = terrain.status === 'ready' || !!terrain.roverMeta;
   const meta = terrain.meta;
-  const noImagery = baseLayer === 'none';
+  const noImagery = baseLayer !== baseLayerKey;
   // Without imagery the shaded relief is what you are looking at, so hillshade
   // is forced on — the same rule the previous panel used.
   const hillshadeOn = overlays.hillshade || noImagery;
@@ -391,31 +403,35 @@ export default function LayerSidebar() {
           title="Surface"
           open={groups.surface}
           onToggle={toggleGroup}
-          visible={(noImagery ? 0 : 1) + (hirise && !noImagery ? 1 : 0)}
-          total={2}
+          visible={(noImagery ? 0 : 1) + (overlayTrekLayer && hirise && !noImagery ? 1 : 0)}
+          total={overlayTrekLayer ? 2 : 1}
           onToggleAll={() => {
-            if (noImagery) setBaseLayer('ctx');
+            if (noImagery) setBaseLayer(baseLayerKey);
             else setBaseLayer('none');
           }}
         >
-          <Layer
-            id="ctx"
-            icon="raster"
-            name="CTX imagery"
-            mode="radio"
-            on={baseLayer === 'ctx'}
-            selected={selected === 'ctx'}
-            onSelect={(id) => {
-              setBaseLayer('ctx');
-              pick(id);
-            }}
-            badge={<DatasetLink id="D05" />}
-          />
-          {selected === 'ctx' && (
-            <Detail>
-              <p className="note">Orbital photograph of the surface, about 10 m per pixel. The base image everything else is drawn over.</p>
-              <Ramp gradient={GREY_RAMP} left="dark" right="bright" />
-            </Detail>
+          {baseTrekLayer && (
+            <>
+              <Layer
+                id={baseLayerKey}
+                icon="raster"
+                name={imageryCfg.baseName || `${baseTrekLayer.shortLabel || baseTrekLayer.label} imagery`}
+                mode="radio"
+                on={baseLayer === baseLayerKey}
+                selected={selected === baseLayerKey}
+                onSelect={(id) => {
+                  setBaseLayer(baseLayerKey);
+                  pick(id);
+                }}
+                badge={<DatasetLink id={baseTrekLayer.datasetId} />}
+              />
+              {selected === baseLayerKey && (
+                <Detail>
+                  <p className="note">{imageryCfg.baseDescription}</p>
+                  <Ramp gradient={GREY_RAMP} left="dark" right="bright" />
+                </Detail>
+              )}
+            </>
           )}
 
           <Layer
@@ -436,20 +452,22 @@ export default function LayerSidebar() {
             </Detail>
           )}
 
-          <Layer
-            id="hirise"
-            icon="detail"
-            name="HiRISE detail"
-            on={hirise && !noImagery}
-            disabled={noImagery}
-            selected={selected === 'hirise'}
-            onSelect={pick}
-            onToggle={() => setValue('hirise', !hirise)}
-            badge={<DatasetLink id="D06" />}
-          />
-          {selected === 'hirise' && (
+          {overlayTrekLayer && (
+            <Layer
+              id="hirise"
+              icon="detail"
+              name={imageryCfg.detailOverlayName || `${overlayTrekLayer.shortLabel || overlayTrekLayer.label} detail`}
+              on={hirise && !noImagery}
+              disabled={noImagery}
+              selected={selected === 'hirise'}
+              onSelect={pick}
+              onToggle={() => setValue('hirise', !hirise)}
+              badge={<DatasetLink id={overlayTrekLayer.datasetId} />}
+            />
+          )}
+          {overlayTrekLayer && selected === 'hirise' && (
             <Detail>
-              <p className="note">Very high resolution imagery (about 0.6 m per pixel) loaded as a window around the rover route as you zoom in.</p>
+              <p className="note">{imageryCfg.detailOverlayDescription}</p>
               {patch && (
                 <p className="note mt-1.5 rounded border border-line px-2 py-1.5">
                   <span className="num text-slate-300">{patch.sizeKm.toFixed(1)} km</span> window · {patch.imagery}
@@ -596,16 +614,19 @@ export default function LayerSidebar() {
           <Layer
             id="traverse"
             icon="path"
-            name="Curiosity traverse"
+            name={`${roverName} traverse`}
             on={show.traverse}
             selected={selected === 'traverse'}
             onSelect={pick}
             onToggle={() => toggleShow('traverse')}
-            badge={<DatasetLink id="D13" />}
+            badge={<DatasetLink id={(roverCfg && roverCfg.traverseDatasetId) || 'D13'} />}
           />
           {selected === 'traverse' && (
             <Detail>
-              <p className="note">The path the rover has actually driven since landing in 2012, from NASA&rsquo;s published track.</p>
+              <p className="note">
+                The path the rover has actually driven {(roverCfg && roverCfg.landedText) || 'since landing'}, from
+                NASA&rsquo;s published track.
+              </p>
             </Detail>
           )}
 
@@ -617,7 +638,7 @@ export default function LayerSidebar() {
             selected={selected === 'waypoints'}
             onSelect={pick}
             onToggle={() => toggleShow('waypoints')}
-            badge={<DatasetLink id="D12" />}
+            badge={<DatasetLink id={(roverCfg && roverCfg.waypointDatasetId) || 'D12'} />}
           />
           {selected === 'waypoints' && (
             <Detail>
@@ -633,7 +654,7 @@ export default function LayerSidebar() {
             selected={selected === 'landmarks'}
             onSelect={pick}
             onToggle={() => toggleShow('landmarks')}
-            badge={<DatasetLink id="D21" />}
+            badge={<DatasetLink id={landmarkSet.nameDatasetId || 'D21'} />}
           />
           {selected === 'landmarks' && (
             <Detail>
@@ -644,7 +665,7 @@ export default function LayerSidebar() {
           <Layer
             id="drillSites"
             icon="drill"
-            name="Drill sites"
+            name={landmarkSet.detailLayerName || 'Drill sites'}
             on={show.drillSites && show.landmarks}
             disabled={!show.landmarks}
             selected={selected === 'drillSites'}
@@ -653,7 +674,7 @@ export default function LayerSidebar() {
           />
           {selected === 'drillSites' && (
             <Detail>
-              <p className="note">Individual holes Curiosity drilled for sample analysis. Shown within about 30 km, positioned from the rover record for the drill sol.</p>
+              <p className="note">{landmarkSet.detailLayerDescription || `Individual holes ${roverName} drilled for sample analysis. Shown within about 30 km, positioned from the rover record for the drill sol.`}</p>
             </Detail>
           )}
         </Group>
@@ -674,17 +695,14 @@ export default function LayerSidebar() {
             name="Rock unit polygons"
             mode="unavailable"
             on={false}
-            lockNote="No public GIS files exist for the published map"
+            lockNote={geologyCfg.polygonsLockNote}
             selected={selected === 'units'}
             onSelect={pick}
             badge={<EvidenceBadge kind="Interpreted" />}
           />
           {selected === 'units' && (
             <Detail>
-              <p className="note">
-                Gale&rsquo;s geological map was published as a figure, not as data, so there is no unit layer to draw
-                here. The written unit descriptions are in the Geology section of the inspector.
-              </p>
+              <p className="note">{geologyCfg.polygonsNote}</p>
             </Detail>
           )}
         </Group>
@@ -732,7 +750,7 @@ export default function LayerSidebar() {
               Rover region:{' '}
               {terrain.roverMeta ? (
                 <>
-                  <DatasetLink id="D01" /> tiles at{' '}
+                  <DatasetLink id={terrain.roverMeta.dataset_id || 'D01'} /> tiles at{' '}
                   {terrain.roverMeta.levels.map((l) => `${Math.round(l.res_m)} m`).join(', ')}
                 </>
               ) : (
@@ -749,9 +767,9 @@ export default function LayerSidebar() {
         </details>
 
         <details className="science-details mt-1.5">
-          <summary>Not available ({UNAVAILABLE_LAYERS.length})</summary>
+          <summary>Not available ({unavailableLayers.length})</summary>
           <ul className="space-y-2">
-            {UNAVAILABLE_LAYERS.map((l) => (
+            {unavailableLayers.map((l) => (
               <li key={l.name}>
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-[11px] leading-snug text-slate-300">{l.name}</span>

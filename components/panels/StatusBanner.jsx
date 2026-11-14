@@ -1,8 +1,10 @@
 'use client';
 import { useState } from 'react';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { useStore } from '@/store/useStore';
 
 export default function StatusBanner() {
+  const crater = useCrater();
   const terrain = useStore((s) => s.terrain);
   const rover = useStore((s) => s.rover);
   const imagery = useStore((s) => s.imagery);
@@ -18,8 +20,8 @@ export default function StatusBanner() {
       text: (
         <>
           <strong className="font-medium">No elevation data prepared.</strong> You are looking at a flat reference
-          surface carrying real orbital imagery — not Gale’s relief. Run{' '}
-          <code className="num rounded bg-black/40 px-1">python scripts/prepare_terrain.py crater</code> and reload.
+          surface carrying real orbital imagery — not {crater.searchRegionLabel || crater.name}’s relief. Run{' '}
+          <code className="num rounded bg-black/40 px-1">{crater.prepareCommand}</code> and reload.
         </>
       ),
       dismiss: true,

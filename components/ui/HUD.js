@@ -54,17 +54,47 @@ export default function HUD() {
             <span key={m.id} className={`h-1 w-5 rounded-sm ${i < missionIndex || allComplete ? 'bg-mars-300' : i === missionIndex ? 'bg-mars-500' : 'bg-white/20'}`} />
           ))}
         </div>
+        {/* objective below mission title */}
+        <div className="mt-5 max-w-[320px] text-left [text-shadow:0_1px_3px_rgba(0,0,0,0.85)]">
+          {allComplete ? (
+            <div className="text-sm text-mars-50">
+              All missions complete. Keep exploring.
+            </div>
+          ) : objective ? (
+            <>
+              <div className="hud-label">
+                Objective · {progress.requiredDone}/{progress.required}
+              </div>
+
+              <div className="mt-1 text-sm text-mars-50">
+                {objective.label}
+              </div>
+
+              <div className="mt-1 font-mono text-[11px] text-ice-300">
+                {fmtDist(targetDist)}
+                {targetDist > 45
+                  ? ` · bearing ${String(Math.round(targetBearing) % 360).padStart(3, '0')}° ${compassLabel(targetBearing)}`
+                  : ' · you are here'}
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2 text-sm">
+              <Check size={14} /> Mission objectives complete
+            </div>
+          )}
+        </div>
       </div>
+      
 
       {/* top-right: pause, settings, data status */}
-      <div className="pointer-events-auto absolute right-6 top-5 flex items-center gap-2">
+      <div className="pointer-events-auto absolute right-6 top-5 flex items-center gap-5">
         {hf && !hf.meta.calibrated && (
           <button type="button" onClick={() => useGame.getState().openNotice()} className="flex items-center gap-1.5 rounded-full border border-amber-300/40 bg-coal-900/70 px-3 py-1.5 text-[10px] uppercase tracking-[0.14em] text-amber-100 backdrop-blur transition hover:border-amber-300" title="About the data in this build">
             <AlertTriangle size={11} /> Terrain: estimated
           </button>
         )}
-        <button type="button" className="icon-btn" aria-label="Settings" onClick={() => useGame.getState().openSettings()}><Settings size={15} /></button>
-        <button type="button" className="icon-btn" aria-label="Pause" onClick={() => useGame.getState().setPaused(true)}><Pause size={15} /></button>
+        <button type="button" className="icon-btn" aria-label="Settings" onClick={() => useGame.getState().openSettings()}><Settings size={23} /></button>
+        <button type="button" className="icon-btn" aria-label="Pause" onClick={() => useGame.getState().setPaused(true)}><Pause size={23} /></button>
       </div>
 
       {/* bottom-left: terrain inspector */}
@@ -94,19 +124,7 @@ export default function HUD() {
           </div>
         )}
         {!pointerLocked && !overlay && !paused && <div className="rounded bg-coal-900/70 px-3 py-1 text-[11px] text-mars-100/80">Click to look around · WASD move · Shift run · M map</div>}
-        <div className="[text-shadow:0_1px_3px_rgba(0,0,0,0.85)]">
-          {allComplete ? (
-            <div className="text-sm text-mars-50">All missions complete. Keep exploring.</div>
-          ) : objective ? (
-            <>
-              <div className="hud-label">Objective · {progress.requiredDone}/{progress.required}</div>
-              <div className="text-sm text-mars-50">{objective.label}</div>
-              <div className="font-mono text-[11px] text-ice-300">{fmtDist(targetDist)}{targetDist > 45 ? ` · bearing ${String(Math.round(targetBearing) % 360).padStart(3, '0')}° ${compassLabel(targetBearing)}` : ' · you are here'}</div>
-            </>
-          ) : (
-            <div className="flex items-center gap-2 text-sm"><Check size={14} /> Mission objectives complete</div>
-          )}
-        </div>
+        
       </div>
 
       {/* bottom-right: minimap */}

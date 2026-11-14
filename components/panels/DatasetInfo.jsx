@@ -1,5 +1,6 @@
 'use client';
 import { DATASETS } from '@/lib/data/registry';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { useStore } from '@/store/useStore';
 import { EvidenceBadge } from '@/components/panels/ui';
 
@@ -16,6 +17,7 @@ const FIELDS = [
 ];
 
 export default function DatasetInfo() {
+  const registryDoc = useCrater().registryDoc;
   const id = useStore((s) => s.datasetInfo);
   const setValue = useStore((s) => s.setValue);
   const d = id ? DATASETS[id] : null;
@@ -64,7 +66,7 @@ export default function DatasetInfo() {
             </dd>
           </div>
         </dl>
-        <p className="mt-4 text-[11px] text-slate-600">Full entry: docs/GALE_DATA_REGISTRY.md</p>
+        {registryDoc && <p className="mt-4 text-[11px] text-slate-600">Full entry: {registryDoc}</p>}
       </div>
     </div>
   );

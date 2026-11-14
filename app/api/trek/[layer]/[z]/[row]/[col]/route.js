@@ -1,19 +1,35 @@
 // Same-origin proxy for NASA Mars Trek WMTS tiles.
 // Why a proxy: WebGL textures and canvas compositing need CORS-clean images,
 // and Trek's cross-origin behaviour was not verified (DATA_ACQUISITION_PLAN C1).
-// Only allow-listed layers from GALE_DATA_REGISTRY.md are served.
+// Only allow-listed layers are served.
+//
+// The allow-list used to be three hardcoded Gale entries. It is now built from
+// the layers every registered crater declares, plus the global layers below,
+// so a new crater's verified Trek layers are served as soon as its
+// configuration names them — and nothing else is.
+import { listCraters } from '@/lib/mars/craters';
 
-const LAYERS = {
-  Gale_CTX_BlockAdj_dd: 'png', // D05
-  curiosity_hirise_mosaic: 'png', // D06
+// Layers that belong to no single crater.
+const GLOBAL_LAYERS = {
   Mars_MGS_MOLA_ClrShade_merge_global_463m: 'jpg', // D10
 };
+
+function allowedLayers() {
+  const out = { ...GLOBAL_LAYERS };
+  for (const crater of listCraters()) {
+    const layers = (crater.imagery && crater.imagery.layers) || {};
+    for (const layer of Object.values(layers)) {
+      if (layer && layer.id) out[layer.id] = layer.ext || 'png';
+    }
+  }
+  return out;
+}
 
 const isIndex = (v) => /^\d{1,7}$/.test(String(v));
 
 export async function GET(_request, context) {
   const { layer, z, row, col } = await context.params;
-  const ext = LAYERS[layer];
+  const ext = allowedLayers()[layer];
   if (!ext || !isIndex(z) || !isIndex(row) || !isIndex(col)) {
     return new Response('Bad tile request', { status: 400 });
   }

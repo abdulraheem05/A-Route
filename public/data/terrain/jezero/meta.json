@@ -1,0 +1,73 @@
+{
+  "dataset_id": "JZ20",
+  "source_name": "USGS Jezero CTX DEM Mosaic (20 m/pixel)",
+  "source_page": "https://astrogeology.usgs.gov/search/map/mars_2020_science_investigation_ctx_dem_mosaic",
+  "source_file": "data/raw/M20_JezeroCrater_CTXDEM_20m.tif",
+  "citation": "USGS Astrogeology, Mars 2020 Science Investigation CTX DEM Mosaic, Jezero Crater, 20 m/pixel.",
+  "evidence_class": "Derived",
+  "res_m": 100.0,
+  "native_res_m": 20.0,
+  "resampling": "average",
+  "crs": "+proj=longlat +a=3396190 +b=3396190 +no_defs (planetocentric, east-positive)",
+  "units": "metres",
+  "nodata": -32768.0,
+  "min": -3446.486328125,
+  "max": -482.59906005859375,
+  "valid_fraction": 0.20593223344677067,
+  "applied_vertical_offset_m": 0.0,
+  "landing_check": {
+    "sampled_m": -2567.35693359375,
+    "expected_m": -2569.91,
+    "diff_m": 2.5530664062498545
+  },
+  "bounds": {
+    "west": 75.1537692,
+    "east": 78.8717121,
+    "south": 15.9058484,
+    "north": 19.4453003
+  },
+  "levels": [
+    {
+      "file": "L0.bin",
+      "width": 2204,
+      "height": 2098,
+      "west": 75.1537692,
+      "north": 19.4453003,
+      "dx": 0.0016870604858115219,
+      "dy": 0.0016870604858115219,
+      "res_m": 100.0
+    },
+    {
+      "file": "L1.bin",
+      "width": 1102,
+      "height": 1049,
+      "west": 75.1537692,
+      "north": 19.4453003,
+      "dx": 0.0033741209716230437,
+      "dy": 0.0033741209716230437,
+      "res_m": 200.0
+    },
+    {
+      "file": "L2.bin",
+      "width": 551,
+      "height": 524,
+      "west": 75.1537692,
+      "north": 19.4453003,
+      "dx": 0.0067482419432460874,
+      "dy": 0.0067482419432460874,
+      "res_m": 400.0
+    },
+    {
+      "file": "L3.bin",
+      "width": 275,
+      "height": 262,
+      "west": 75.1537692,
+      "north": 19.4453003,
+      "dx": 0.013496483886492175,
+      "dy": 0.013496483886492175,
+      "res_m": 800.0
+    }
+  ],
+  "created": "2026-11-14T19:29:29.210078Z",
+  "tool": "scripts/prepare_terrain.py crater --region jezero"
+}

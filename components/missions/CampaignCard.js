@@ -14,7 +14,10 @@ export default function CampaignCard({ mode }) {
       <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-mars-100/75">{finish ? 'You have completed the Jezero exploration campaign. Your scientific journey is complete.' : 'Explore rover panoramas, inspect significant rocks, and investigate real Perseverance drill sites.'}</p>
       {!finish && <div className="mt-7 rounded-lg border border-mars-200/15 bg-black/20 p-4"><div className="text-xs uppercase tracking-[.2em] text-mars-300">Mission 01 · {mission.title}</div><div className="mt-2 text-xl text-mars-50">{mission.location}</div><div className="mt-1 text-sm text-mars-100/60">{mission.objective}</div></div>}
       <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-        {finish ? <><button className="btn-primary min-w-48 py-3" onClick={()=>useGame.getState().dismissCompletion()}>Stay in the crater</button><button className="btn min-w-48 py-3" onClick={()=>{useGame.getState().returnToStart();useGame.getState().resetProgress();}}>Exit crater</button></> : <button className="btn-primary min-w-64 py-4 text-lg" onClick={()=>useGame.getState().startExploring()}>Start exploring</button>}
+        {finish ? <><button className="btn-primary min-w-48 py-3" onClick={()=>useGame.getState().dismissCompletion()}>Stay in the crater</button><button className="btn min-w-48 py-3" onClick={()=>{useGame.getState().returnToStart();useGame.getState().resetProgress();}}>Exit crater</button></> : <button className="mx-auto flex min-w-72 items-center justify-center gap-3
+             rounded-full border border-white/10
+             bg-black/40 px-6 py-4 text-lg
+             text-white transition hover:bg-black/60" onClick={()=>useGame.getState().startExploring()}>Start exploring</button>}
       </div>
     </section>
   </div>;

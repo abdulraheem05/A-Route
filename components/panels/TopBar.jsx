@@ -5,10 +5,10 @@
 // resolution, imagery tile counts, rover waypoint counts, loading text) is now
 // behind one indicator: a single dot whose colour reports the worst current
 // state, opening a compact data panel. The MAP / PLAY switch is owned by
-// GaleWorkspace and floats over the centre of this bar, so the centre is kept
+// CraterWorkspace and floats over the centre of this bar, so the centre is kept
 // clear for it.
 import { useState } from 'react';
-import { GALE } from '@/lib/mars/constants';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { brandGradientTextStyle } from '@/lib/brand';
 import { inBounds, parseLatLon } from '@/lib/coordinates/projection';
 import { cameraApi } from '@/lib/terrain/cameraApi';
@@ -89,6 +89,12 @@ function Popover({ title, onClose, children, width = 300 }) {
 }
 
 export default function TopBar() {
+  const crater = useCrater();
+  const baseLayerKey = (crater.imagery && crater.imagery.baseLayerKey) || 'ctx';
+  const baseDatasetId =
+    (crater.imagery && crater.imagery.layers && crater.imagery.layers[baseLayerKey]
+      ? crater.imagery.layers[baseLayerKey].datasetId
+      : null);
   const terrain = useStore((s) => s.terrain);
   const rover = useStore((s) => s.rover);
   const imagery = useStore((s) => s.imagery);
@@ -107,11 +113,11 @@ export default function TopBar() {
     e.preventDefault();
     const p = parseLatLon(query);
     if (!p) {
-      setError('Use “lat, lon”, e.g. −4.59, 137.44');
+      setError(`Use “lat, lon”, e.g. ${crater.searchExample}`);
       return;
     }
-    if (!inBounds(GALE, p.lon, p.lat)) {
-      setError('Outside the Gale data region');
+    if (!inBounds(crater.bounds, p.lon, p.lat)) {
+      setError(`Outside the ${crater.searchRegionLabel || crater.name} data region`);
       return;
     }
     setError(null);
@@ -120,12 +126,15 @@ export default function TopBar() {
   };
 
   // One indicator for everything: the worst state wins.
-  const loading = terrain.status === 'loading' || rover.status === 'loading' || (baseLayer === 'ctx' && !imagery.done);
+  const loading =
+    terrain.status === 'loading' || rover.status === 'loading' || (baseLayer === baseLayerKey && !imagery.done);
   const failed =
     terrain.status === 'error' ||
     rover.status === 'error' ||
-    (baseLayer === 'ctx' && imagery.done && imagery.requested > 0 && imagery.drawn === 0);
-  const degraded = terrain.status === 'missing' || rover.origin === 'snapshot';
+    (baseLayer === baseLayerKey && imagery.done && imagery.requested > 0 && imagery.drawn === 0);
+  const degraded = terrain.status === 'missing' || rover.origin === 'snapshot' || rover.origin === 'bundled';
+
+  const roverName = (crater.rover && crater.rover.name) || 'the rover';
 
   const dot = failed ? '#fb7185' : loading ? '#6cb6f5' : degraded ? 'var(--g-warn)' : 'var(--g-ok)';
   const dotLabel = failed ? 'Some data unavailable' : loading ? 'Loading data' : degraded ? 'Running on partial data' : 'All datasets loaded';
@@ -148,7 +157,7 @@ export default function TopBar() {
         <span className="font-artemus text-[15px] leading-none tracking-[0.2em]" style={brandGradientTextStyle()}>
           A-ROUTE
         </span>
-        <span className="hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:inline">Gale crater</span>
+        <span className="hidden text-[10px] uppercase tracking-[0.2em] text-slate-500 sm:inline">{crater.shortLabel || crater.name}</span>
       </div>
 
       <form onSubmit={go} className="relative ml-2 hidden md:block">
@@ -172,7 +181,7 @@ export default function TopBar() {
         )}
       </form>
 
-      {/* Kept clear for the MAP / PLAY switch (components/GaleWorkspace.js). */}
+      {/* Kept clear for the MAP / PLAY switch (components/CraterWorkspace.jsx). */}
       <div className="gale-topbar-centre" aria-hidden="true" />
 
       <div className="relative flex items-center gap-1">
@@ -236,7 +245,7 @@ export default function TopBar() {
               <div className="kv">
                 <span>Rover-area tiles</span>
                 <span>
-                  <DatasetLink id="D01" />{' '}
+                  <DatasetLink id={terrain.roverMeta.dataset_id || 'D01'} />{' '}
                   <span className="num text-slate-300">
                     {terrain.roverMeta.levels.map((l) => `${Math.round(l.res_m)} m`).join(' · ')}
                   </span>
@@ -246,12 +255,12 @@ export default function TopBar() {
             <div className="kv">
               <span>Imagery</span>
               <span>
-                {baseLayer !== 'ctx' ? (
+                {baseLayer !== baseLayerKey ? (
                   <span className="text-slate-500">off</span>
                 ) : imagery.done ? (
                   imagery.drawn > 0 ? (
                     <>
-                      <DatasetLink id="D05" /> <span className="num text-slate-300">{imagery.drawn} tiles</span>
+                      <DatasetLink id={baseDatasetId} /> <span className="num text-slate-300">{imagery.drawn} tiles</span>
                     </>
                   ) : (
                     <span className="text-rose-300">no tiles received</span>
@@ -276,7 +285,7 @@ export default function TopBar() {
               <span>
                 {rover.status === 'ready' ? (
                   <>
-                    <DatasetLink id="D12" />{' '}
+                    <DatasetLink id={(crater.rover && crater.rover.waypointDatasetId) || 'D12'} />{' '}
                     <span className="num text-slate-300">{rover.waypoints.length} waypoints</span>
                   </>
                 ) : rover.status === 'error' ? (
@@ -289,7 +298,13 @@ export default function TopBar() {
             <div className="kv">
               <span>Source</span>
               <span className="text-slate-300">
-                {rover.origin === 'snapshot' ? 'local snapshot' : rover.origin === 'live' ? 'NASA, live' : '—'}
+                {rover.origin === 'snapshot'
+                  ? 'local snapshot'
+                  : rover.origin === 'bundled'
+                  ? 'bundled subset'
+                  : rover.origin === 'live'
+                  ? 'NASA, live'
+                  : '—'}
               </span>
             </div>
             <p className="note mt-2">Click a dataset code for its instrument, resolution and citation.</p>
@@ -301,7 +316,7 @@ export default function TopBar() {
             <ul className="space-y-2 body-text">
               <li>
                 <span className="text-slate-200">Move around.</span> Drag to orbit, scroll to zoom, right-drag to pan.
-                The toolbox on the right resets north, tilts the view and flies to Curiosity.
+                The toolbox on the right resets north, tilts the view and flies to {roverName}.
               </li>
               <li>
                 <span className="text-slate-200">Inspect something.</span> Click the terrain, a rover waypoint or a
@@ -312,8 +327,8 @@ export default function TopBar() {
                 imagery, terrain analysis and the rover track. Select a layer to reach its opacity and legend.
               </li>
               <li>
-                <span className="text-slate-200">Follow the mission.</span> The timeline at the bottom moves Curiosity
-                to where it was on any sol — a Martian day since landing.
+                <span className="text-slate-200">Follow the mission.</span> The timeline at the bottom moves {roverName}
+                {' '}to where it was on any sol — a Martian day since landing.
               </li>
             </ul>
             <div className="mt-3 border-t border-line pt-2.5">

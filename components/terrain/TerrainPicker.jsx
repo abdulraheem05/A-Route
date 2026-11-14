@@ -4,8 +4,8 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { GALE } from '@/lib/mars/constants';
 import { elevToY, inBounds, xzToLonLat } from '@/lib/coordinates/projection';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { heightProvider } from '@/lib/terrain/heightProvider';
 import { raymarch } from '@/lib/terrain/raymarch';
 import { nearestWaypoint } from '@/lib/data/roverAdapter';
@@ -13,6 +13,7 @@ import { useStore } from '@/store/useStore';
 
 export default function TerrainPicker() {
   const { gl, camera } = useThree();
+  const bounds = useCrater().bounds;
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const ndc = useRef(new THREE.Vector2());
   const dirty = useRef(false);
@@ -24,7 +25,7 @@ export default function TerrainPicker() {
       const hasData = heightProvider.hasData();
       const heightAt = (sx, sz) => {
         const [lon, lat] = xzToLonLat(sx, sz);
-        if (!inBounds(GALE, lon, lat)) return NaN;
+        if (!inBounds(bounds, lon, lat)) return NaN;
         if (!hasData) return 0; // flat reference surface
         const h = heightProvider.height(lon, lat);
         return Number.isNaN(h) ? NaN : elevToY(h, exag);
@@ -42,7 +43,7 @@ export default function TerrainPicker() {
         resM: sample ? sample.resM : null,
       };
     },
-    [camera, raycaster]
+    [camera, raycaster, bounds]
   );
 
   useEffect(() => {

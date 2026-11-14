@@ -1,17 +1,18 @@
 'use client';
 // Terrain loading pipeline. Looks for elevation prepared by
-// scripts/prepare_terrain.py under /public/data/terrain. If none exists the
-// app runs on a flat reference surface and says so — it never substitutes
-// synthetic relief.
+// scripts/prepare_terrain.py under the URLs the crater configuration names.
+// If none exists the app runs on a flat reference surface and says so — it
+// never substitutes synthetic relief.
+//
+// The URLs used to be the fixed Gale paths. They now come from
+// crater.terrain, whose Gale values are those same paths, so the requests the
+// browser makes for Gale are unchanged.
 import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { heightProvider } from '@/lib/terrain/heightProvider';
 import { loadHeightLevel } from '@/lib/terrain/heightGrid';
 import { RoverTiles } from '@/lib/terrain/roverTiles';
-
-const CRATER_URL = '/data/terrain/crater';
-const ROVER_URL = '/data/terrain/rover';
-const MAX_RENDER_VERTS = 1.7e6;
 
 async function fetchJson(url) {
   try {
@@ -26,21 +27,37 @@ async function fetchJson(url) {
 }
 
 export function useTerrainData() {
+  const crater = useCrater();
+  const craterUrl = crater.terrain && crater.terrain.craterUrl;
+  const roverUrl = crater.terrain && crater.terrain.roverUrl;
+  const maxRenderVerts = (crater.terrain && crater.terrain.maxRenderVerts) || 1.7e6;
+
   useEffect(() => {
     let dead = false;
     const { setTerrain, bumpTerrain } = useStore.getState();
+    // A different crater's grids must never answer a query about this one.
+    heightProvider.reset();
 
     (async () => {
+      // No prepared crater grid is configured at all: flat reference surface.
+      if (!craterUrl) {
+        setTerrain({ status: 'missing', meta: null, roverMeta: null });
+        bumpTerrain();
+        return;
+      }
+
       // Rover-region tiles (optional).
-      const roverMeta = await fetchJson(`${ROVER_URL}/meta.json`);
-      if (dead) return;
-      if (roverMeta && Array.isArray(roverMeta.levels) && roverMeta.levels.length) {
-        heightProvider.setRover(new RoverTiles(roverMeta, ROVER_URL));
-        setTerrain({ roverMeta });
+      if (roverUrl) {
+        const roverMeta = await fetchJson(`${roverUrl}/meta.json`);
+        if (dead) return;
+        if (roverMeta && Array.isArray(roverMeta.levels) && roverMeta.levels.length) {
+          heightProvider.setRover(new RoverTiles(roverMeta, roverUrl));
+          setTerrain({ roverMeta });
+        }
       }
 
       // Crater-wide grid.
-      const meta = await fetchJson(`${CRATER_URL}/meta.json`);
+      const meta = await fetchJson(`${craterUrl}/meta.json`);
       if (dead) return;
       if (!meta || !Array.isArray(meta.levels) || !meta.levels.length) {
         setTerrain({ status: 'missing', meta: null });
@@ -51,18 +68,18 @@ export function useTerrainData() {
         const levels = meta.levels; // finest first
         const coarse = levels[levels.length - 1];
         const fine = levels[0];
-        const render = levels.find((l) => l.width * l.height <= MAX_RENDER_VERTS) || coarse;
+        const render = levels.find((l) => l.width * l.height <= maxRenderVerts) || coarse;
 
         // Progressive: coarse overview first, then the render and sampling levels.
-        const gCoarse = await loadHeightLevel(CRATER_URL, meta, coarse);
+        const gCoarse = await loadHeightLevel(craterUrl, meta, coarse);
         if (dead) return;
         heightProvider.setCrater({ sample: gCoarse, render: gCoarse, meta });
         setTerrain({ status: 'ready', meta });
         bumpTerrain();
 
-        const gRender = render === coarse ? gCoarse : await loadHeightLevel(CRATER_URL, meta, render);
+        const gRender = render === coarse ? gCoarse : await loadHeightLevel(craterUrl, meta, render);
         if (dead) return;
-        const gFine = fine === render ? gRender : await loadHeightLevel(CRATER_URL, meta, fine);
+        const gFine = fine === render ? gRender : await loadHeightLevel(craterUrl, meta, fine);
         if (dead) return;
         heightProvider.setCrater({ sample: gFine, render: gRender, meta });
         bumpTerrain();
@@ -75,5 +92,5 @@ export function useTerrainData() {
     return () => {
       dead = true;
     };
-  }, []);
+  }, [craterUrl, roverUrl, maxRenderVerts]);
 }

@@ -4,8 +4,8 @@
 // imagery, and the interface says so.
 import { useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { GALE } from '@/lib/mars/constants';
-import { TREK_LAYERS, degPerPixel } from '@/lib/data/trekAdapter';
+import { useCrater } from '@/lib/mars/CraterContext';
+import { degPerPixel } from '@/lib/data/trekAdapter';
 import { buildGridGeometry } from '@/lib/terrain/gridGeometry';
 import { heightProvider } from '@/lib/terrain/heightProvider';
 import { createCanvas, drawTrekTiles } from '@/lib/terrain/imagery';
@@ -18,20 +18,28 @@ import {
 import { cameraApi } from '@/lib/terrain/cameraApi';
 import { useStore } from '@/store/useStore';
 
-const BASE_ZOOM = 9; // about 81 m/px over the whole region; closer views use the detail patch
-
 export default function BaseTerrain() {
   const terrainVersion = useStore((s) => s.terrainVersion);
   const baseLayer = useStore((s) => s.baseLayer);
   const { gl } = useThree();
   const material = useMemo(() => createTerrainMaterial(), []);
 
+  const crater = useCrater();
+  const bounds = crater.bounds;
+  const imagery = crater.imagery || {};
+  const baseLayerKey = imagery.baseLayerKey || 'ctx';
+  const baseTrekLayer = (imagery.layers || {})[baseLayerKey] || null;
+  // Gale: 9 (about 81 m/px over the whole region) with a 7 preview pass;
+  // closer views use the detail patch.
+  const baseZoom = imagery.baseZoom;
+  const previewZoom = imagery.basePreviewZoom;
+
   const geometry = useMemo(() => {
     const g = heightProvider.craterRender;
-    if (!g) return buildGridGeometry({ bounds: GALE, nx: 2, ny: 2, uvBounds: GALE });
-    return buildGridGeometry({ bounds: g.centreBounds(), nx: g.width, ny: g.height, uvBounds: GALE });
+    if (!g) return buildGridGeometry({ bounds, nx: 2, ny: 2, uvBounds: bounds });
+    return buildGridGeometry({ bounds: g.centreBounds(), nx: g.width, ny: g.height, uvBounds: bounds });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [terrainVersion]);
+  }, [terrainVersion, bounds]);
 
   useEffect(() => () => geometry.dispose(), [geometry]);
   useEffect(() => () => material.dispose(), [material]);
@@ -55,14 +63,14 @@ export default function BaseTerrain() {
   // Imagery: coarse pass first, then the full base zoom, refreshed as tiles arrive.
   useEffect(() => {
     const u = material.uniforms;
-    if (baseLayer !== 'ctx') {
+    if (baseLayer !== baseLayerKey || !baseTrekLayer) {
       u.uHasImagery.value = 0;
       useStore.setState({ imagery: { requested: 0, drawn: 0, done: true } });
       return undefined;
     }
     let cancelled = false;
     const maxSize = Math.min(4096, gl.capabilities.maxTextureSize);
-    const canvas = createCanvas(GALE, 1 / degPerPixel(BASE_ZOOM), maxSize);
+    const canvas = createCanvas(bounds, 1 / degPerPixel(baseZoom), maxSize);
     const tex = createImageryTexture(canvas, gl.capabilities.getMaxAnisotropy());
     u.uImagery.value = tex;
     u.uHasImagery.value = 1;
@@ -77,10 +85,12 @@ export default function BaseTerrain() {
     };
     const isCancelled = () => cancelled;
     (async () => {
-      await drawTrekTiles(canvas, GALE, TREK_LAYERS.ctx, 7, { isCancelled, onBatch });
-      if (cancelled) return;
-      tex.needsUpdate = true;
-      const stats = await drawTrekTiles(canvas, GALE, TREK_LAYERS.ctx, BASE_ZOOM, { isCancelled, onBatch });
+      if (previewZoom) {
+        await drawTrekTiles(canvas, bounds, baseTrekLayer, previewZoom, { isCancelled, onBatch });
+        if (cancelled) return;
+        tex.needsUpdate = true;
+      }
+      const stats = await drawTrekTiles(canvas, bounds, baseTrekLayer, baseZoom, { isCancelled, onBatch });
       if (cancelled) return;
       tex.needsUpdate = true;
       useStore.setState({ imagery: { requested: stats.requested, drawn: stats.drawn, done: true } });
@@ -90,7 +100,7 @@ export default function BaseTerrain() {
       u.uHasImagery.value = 0;
       tex.dispose();
     };
-  }, [baseLayer, material, gl]);
+  }, [baseLayer, material, gl, bounds, baseLayerKey, baseTrekLayer, baseZoom, previewZoom]);
 
   useFrame(() => {
     const s = useStore.getState();

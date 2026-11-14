@@ -1,20 +1,26 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
-import { GALE } from '@/lib/mars/constants';
 import { lonLatToXZ, xzToLonLat } from '@/lib/coordinates/projection';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { cameraApi, MAX_DIST, MIN_DIST } from '@/lib/terrain/cameraApi';
 import { useStore } from '@/store/useStore';
 
 const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
-const [TX, TZ] = lonLatToXZ(137.7, -5.0);
-const START_TARGET = [TX, 0, TZ];
 
 export default function CameraRig() {
   const ref = useRef();
   const { camera } = useThree();
   const lastPublish = useRef(0);
+  const crater = useCrater();
+  const bounds = crater.bounds;
+  // Memoised so MapControls is handed the same array on every render and never
+  // re-applies the opening target over the user's own panning.
+  const START_TARGET = useMemo(() => {
+    const [tx, tz] = lonLatToXZ(crater.view.home.lon, crater.view.home.lat);
+    return [tx, 0, tz];
+  }, [crater]);
 
   useEffect(() => {
     cameraApi.camera = camera;
@@ -44,8 +50,8 @@ export default function CameraRig() {
 
     // Keep the orbit target inside the data region and on the surface.
     let [lon, lat] = xzToLonLat(controls.target.x, controls.target.z);
-    const cl = clamp(lon, GALE.west, GALE.east);
-    const ct = clamp(lat, GALE.south, GALE.north);
+    const cl = clamp(lon, bounds.west, bounds.east);
+    const ct = clamp(lat, bounds.south, bounds.north);
     if (cl !== lon || ct !== lat) {
       const [x, z] = lonLatToXZ(cl, ct);
       const dx = x - controls.target.x;

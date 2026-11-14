@@ -12,8 +12,10 @@
 // Measurement used to live permanently in the right sidebar. It now appears
 // only in measurement mode, as a floating card over the map, and uses exactly
 // the same two-point calculation as before.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { CraterProvider, useCrater } from '@/lib/mars/CraterContext';
+import { defaultCrater } from '@/lib/mars/craters';
 import { useTerrainData } from '@/hooks/useTerrainData';
 import { useRoverData } from '@/hooks/useRoverData';
 import { useWeather } from '@/hooks/useWeather';
@@ -171,10 +173,41 @@ function MeasureCard() {
   );
 }
 
-export default function Explorer() {
+/**
+ * The explorer for one crater.
+ *
+ * `crater` is a configuration object from lib/mars/craters/. Every
+ * crater-specific value the scene, the panels and the data hooks need comes
+ * from it, published through CraterProvider. Called with no crater it explores
+ * the default (Gale), which is what the original component did.
+ */
+export default function Explorer({ crater = defaultCrater }) {
+  return (
+    <CraterProvider crater={crater}>
+      <ExplorerShell />
+    </CraterProvider>
+  );
+}
+
+function ExplorerShell() {
+  const crater = useCrater();
   useTerrainData();
   useRoverData();
   useWeather();
+
+  // Crater-scoped state is cleared whenever a different crater is explored, so
+  // one crater's sol, selection or dataset status can never appear under
+  // another after a client-side navigation. On a fresh mount this restores the
+  // values the store already starts with, so Gale is unaffected.
+  //
+  // The base-imagery choice is a layer key from the crater's own imagery set.
+  // Gale's is 'ctx', which is already the store default.
+  useEffect(() => {
+    useStore.getState().resetCraterState();
+    const key = crater.imagery && crater.imagery.baseLayerKey;
+    const current = useStore.getState().baseLayer;
+    if (key && current !== 'none' && current !== key) useStore.setState({ baseLayer: key });
+  }, [crater]);
 
   return (
     <main className="gale-workspace relative h-screen w-screen overflow-hidden text-slate-200">

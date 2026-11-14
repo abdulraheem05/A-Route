@@ -4,10 +4,12 @@
 import { useMemo } from 'react';
 import { Html } from '@react-three/drei';
 import { resolveLandmarks } from '@/lib/data/landmarks';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { scenePosition } from '@/lib/terrain/place';
 import { useStore } from '@/store/useStore';
 
 export default function LandmarkMarkers() {
+  const landmarkSet = useCrater().landmarks;
   const waypoints = useStore((s) => s.rover.waypoints);
   const exaggeration = useStore((s) => s.exaggeration);
   const terrainVersion = useStore((s) => s.terrainVersion);
@@ -18,7 +20,7 @@ export default function LandmarkMarkers() {
   const selectedId = useStore((s) => (s.selection && s.selection.type === 'landmark' ? s.selection.id : null));
   const select = useStore((s) => s.select);
 
-  const landmarks = useMemo(() => resolveLandmarks(waypoints), [waypoints]);
+  const landmarks = useMemo(() => resolveLandmarks(waypoints, landmarkSet), [waypoints, landmarkSet]);
 
   const placed = useMemo(
     () =>

@@ -12,10 +12,9 @@
 // printed by default. Measurement has moved out of this panel entirely and
 // into a floating card (components/Explorer.jsx).
 import { useMemo } from 'react';
-import { BRADBURY } from '@/lib/mars/constants';
-import { FIXED_LANDMARKS, NAME_CLASS, resolveLandmarks, waypointIndexAtSol } from '@/lib/data/landmarks';
+import { NAME_CLASS, resolveLandmarks, waypointIndexAtSol } from '@/lib/data/landmarks';
 import { nearestWaypoint } from '@/lib/data/roverAdapter';
-import { STRAT_UNITS, UNIT_NOTE } from '@/lib/data/units';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { formatLat, formatLon, inBounds } from '@/lib/coordinates/projection';
 import { heightProvider } from '@/lib/terrain/heightProvider';
 import { cameraApi } from '@/lib/terrain/cameraApi';
@@ -233,7 +232,9 @@ function NearRover({ lon, lat }) {
 /* ---------------------------------------------------------------- cards -- */
 
 function PointCard({ sel }) {
-  const containing = FIXED_LANDMARKS.filter((l) => l.bounds && inBounds(l.bounds, sel.lon, sel.lat));
+  const crater = useCrater();
+  const fixed = (crater.landmarks && crater.landmarks.fixed) || [];
+  const containing = fixed.filter((l) => l.bounds && inBounds(l.bounds, sel.lon, sel.lat));
   return (
     <>
       <Block>
@@ -274,12 +275,16 @@ function PointCard({ sel }) {
 }
 
 function WaypointCard({ sel }) {
+  const crater = useCrater();
+  const landmarkSet = crater.landmarks;
+  const roverName = (crater.rover && crater.rover.name) || 'The rover';
+  const waypointDatasetId = (crater.rover && crater.rover.waypointDatasetId) || 'D12';
   const waypoints = useStore((s) => s.rover.waypoints);
   const weather = useStore((s) => s.weather);
   const w = waypoints[sel.index];
   const sites = useMemo(
-    () => (w ? resolveLandmarks(waypoints).filter((l) => l.resolvedSol === w.sol && l.rmc === w.rmc) : []),
-    [waypoints, w]
+    () => (w ? resolveLandmarks(waypoints, landmarkSet).filter((l) => l.resolvedSol === w.sol && l.rmc === w.rmc) : []),
+    [waypoints, w, landmarkSet]
   );
   if (!w) return null;
   const obs = weather.bySol.get(w.sol);
@@ -290,7 +295,7 @@ function WaypointCard({ sel }) {
         <div className="mb-1.5 flex items-start justify-between gap-2">
           <div>
             <h2 className="text-[13px] font-medium text-slate-50">Drive end · sol {w.sol}</h2>
-            <p className="note">Where Curiosity stopped at the end of this drive.</p>
+            <p className="note">Where {roverName} stopped at the end of this drive.</p>
           </div>
           <EvidenceBadge kind="Derived" />
         </div>
@@ -302,7 +307,7 @@ function WaypointCard({ sel }) {
           {w.driveType ? <span className="text-slate-500"> · {w.driveType}</span> : null}
         </K>
         <K label="Elevation">
-          <span className="num">{fmt(w.elev, 1, ' m')}</span> <DatasetLink id="D12" />
+          <span className="num">{fmt(w.elev, 1, ' m')}</span> <DatasetLink id={waypointDatasetId} />
         </K>
         {sites.length > 0 && <K label="At this stop">{sites.map((l) => l.name).join(', ')}</K>}
       </Block>
@@ -320,10 +325,7 @@ function WaypointCard({ sel }) {
             </K>
           </>
         ) : (
-          <p className="note">
-            The public daily feed has no record for this sol. Older sols are in the PDS REMS archive, which is not
-            integrated.
-          </p>
+          <p className="note">{(crater.weather && crater.weather.archiveNote) || 'No weather record exists for this sol.'}</p>
         )}
       </Block>
 
@@ -332,7 +334,7 @@ function WaypointCard({ sel }) {
           <summary>Rover attitude and record</summary>
           <div>
             <K label="Record">
-              <span className="num">RMC {w.rmc}</span>
+              {w.rmc ? <span className="num">RMC {w.rmc}</span> : <span className="text-slate-500">not in this file</span>}
             </K>
             <K label="Tilt / pitch / roll">
               <span className="num">
@@ -370,9 +372,13 @@ function WaypointCard({ sel }) {
 }
 
 function LandmarkCard({ sel }) {
+  const landmarkSet = useCrater().landmarks;
   const waypoints = useStore((s) => s.rover.waypoints);
   const setSol = useStore((s) => s.setSol);
-  const l = useMemo(() => resolveLandmarks(waypoints).find((x) => x.id === sel.id), [waypoints, sel.id]);
+  const l = useMemo(
+    () => resolveLandmarks(waypoints, landmarkSet).find((x) => x.id === sel.id),
+    [waypoints, sel.id, landmarkSet]
+  );
   if (!l) return null;
 
   return (
@@ -449,6 +455,16 @@ function LandmarkCard({ sel }) {
 
 /** Nothing selected: what this place is, and what you can do next. */
 function DefaultCard() {
+  const crater = useCrater();
+  const roverCfg = crater.rover || null;
+  const roverName = (roverCfg && roverCfg.name) || 'Rover';
+  const landing = roverCfg && roverCfg.landingSite;
+  const imageryDatasetIds = useMemo(() => {
+    const layers = (crater.imagery && crater.imagery.layers) || {};
+    return Object.values(layers)
+      .map((l) => l.datasetId)
+      .filter(Boolean);
+  }, [crater]);
   const terrain = useStore((s) => s.terrain);
   const rover = useStore((s) => s.rover);
   const toggleMeasure = useStore((s) => s.toggleMeasure);
@@ -459,7 +475,7 @@ function DefaultCard() {
     const s = useStore.getState();
     const wps = s.rover.waypoints;
     if (!wps.length) {
-      cameraApi.flyTo(BRADBURY.lon, BRADBURY.lat, 6);
+      if (landing) cameraApi.flyTo(landing.lon, landing.lat, 6);
       return;
     }
     const i = s.sol === null ? wps.length - 1 : Math.max(0, waypointIndexAtSol(wps, s.sol));
@@ -469,21 +485,22 @@ function DefaultCard() {
   return (
     <>
       <Block>
-        <h2 className="text-[13px] font-medium text-slate-50">Gale Crater</h2>
-        <p className="body-text mt-1">
-          An impact crater 154 km across with a mound of layered rock at its centre, Aeolis Mons. NASA&rsquo;s Curiosity
-          rover landed on the northern floor in 2012 and has been climbing the mound ever since.
-        </p>
+        <h2 className="text-[13px] font-medium text-slate-50">{crater.name}</h2>
+        <p className="body-text mt-1">{crater.overview}</p>
         <p className="note mt-1.5">Click the terrain, a rover waypoint or a named place to inspect it.</p>
       </Block>
 
       <Block>
         <div className="grid grid-cols-2 gap-1.5">
-          <button type="button" className="btn" onClick={toRover}>
+          <button type="button" className="btn" onClick={toRover} disabled={!roverCfg}>
             <Icon name="rover" size={13} />
-            Curiosity
+            {roverName}
           </button>
-          <button type="button" className="btn" onClick={() => cameraApi.flyTo(137.7, -5.0, 260)}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => cameraApi.flyTo(crater.view.home.lon, crater.view.home.lat, crater.view.fitDistanceKm)}
+          >
             <Icon name="crater" size={13} />
             Whole crater
           </button>
@@ -507,7 +524,16 @@ function DefaultCard() {
           )}
         </K>
         <K label="Imagery">
-          <DatasetLink id="D05" /> <DatasetLink id="D06" />
+          {imageryDatasetIds.length ? (
+            imageryDatasetIds.map((id, i) => (
+              <span key={id}>
+                {i > 0 ? ' ' : ''}
+                <DatasetLink id={id} />
+              </span>
+            ))
+          ) : (
+            <span className="text-slate-500">none</span>
+          )}
         </K>
         <K label="Rover">
           {rover.status === 'ready' ? (
@@ -517,6 +543,8 @@ function DefaultCard() {
             </span>
           ) : rover.status === 'error' ? (
             <span className="text-rose-300">unavailable</span>
+          ) : rover.status === 'unavailable' ? (
+            <span className="text-slate-500">no mission here</span>
           ) : (
             <span className="text-slate-500">loading…</span>
           )}
@@ -549,17 +577,23 @@ function DefaultCard() {
 
 /** Written rock-unit glossary. There is no unit polygon layer to toggle. */
 function GeologyBody() {
+  const geology = useCrater().geology || {};
+  const units = geology.units || [];
+  if (!units.length) {
+    return (
+      <Block>
+        <p className="note">No rock-unit descriptions are available for this crater in the datasets loaded here.</p>
+      </Block>
+    );
+  }
   return (
     <>
       <Block right={<EvidenceBadge kind="Interpreted" />}>
-        <p className="body-text">
-          The rocks Curiosity drives over are grouped into units — bodies of rock that formed in the same way at
-          roughly the same time. These descriptions come from published mapping, not from a data layer.
-        </p>
+        <p className="body-text">{geology.intro}</p>
       </Block>
       <Block>
         <ul className="space-y-2.5">
-          {STRAT_UNITS.map((u) => (
+          {units.map((u) => (
             <li key={u.name}>
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[12px] font-medium text-slate-100">{u.name}</span>
@@ -575,7 +609,7 @@ function GeologyBody() {
         <details className="science-details">
           <summary>Why there is no geology layer on the map</summary>
           <div>
-            <p className="note">{UNIT_NOTE}</p>
+            <p className="note">{geology.note}</p>
           </div>
         </details>
       </Block>
@@ -586,6 +620,8 @@ function GeologyBody() {
 /* --------------------------------------------------------------- panel --- */
 
 export default function InfoPanel() {
+  const crater = useCrater();
+  const unitCount = ((crater.geology && crater.geology.units) || []).length;
   const open = useStore((s) => s.infoOpen);
   const tab = useStore((s) => s.infoTab);
   const selection = useStore((s) => s.selection);
@@ -599,7 +635,7 @@ export default function InfoPanel() {
   const toggle = (id) => setValue('infoTab', tab === id ? null : id);
 
   const inspectHint = !selection
-    ? 'Gale Crater'
+    ? crater.name
     : selection.type === 'waypoint'
     ? `Sol ${waypoints[selection.index] ? waypoints[selection.index].sol : '—'}`
     : selection.type === 'landmark'
@@ -607,7 +643,13 @@ export default function InfoPanel() {
     : 'Terrain point';
 
   const weatherHint =
-    weatherStatus === 'ready' ? (sol !== null ? `Sol ${sol}` : 'Rover record') : weatherStatus === 'error' ? 'Unavailable' : 'Loading…';
+    weatherStatus === 'ready'
+      ? sol !== null
+        ? `Sol ${sol}`
+        : 'Rover record'
+      : weatherStatus === 'error' || weatherStatus === 'unavailable'
+      ? 'Unavailable'
+      : 'Loading…';
 
   // The dock itself is transparent: only the three boxes take pointer input, so
   // the empty space below them leaves the map clickable.
@@ -635,7 +677,7 @@ export default function InfoPanel() {
         <WeatherPanel />
       </Acc>
 
-      <Acc id="units" icon="geology" title="Geology" hint={`${STRAT_UNITS.length} rock units`} open={tab === 'units'} onToggle={toggle}>
+      <Acc id="units" icon="geology" title="Geology" hint={unitCount ? `${unitCount} rock units` : 'No unit data'} open={tab === 'units'} onToggle={toggle}>
         <GeologyBody />
       </Acc>
     </aside>

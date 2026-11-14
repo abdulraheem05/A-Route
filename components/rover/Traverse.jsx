@@ -1,5 +1,6 @@
 'use client';
-// Curiosity's traverse from NASA's path file (D13), drawn on the terrain.
+// The rover's traverse from NASA's path file (Curiosity: D13), drawn on the
+// terrain. Crater-independent: it draws whatever traverse the store holds.
 // The part driven up to the selected sol is highlighted when the path can be
 // matched to the waypoint file; otherwise the whole path is drawn uniformly.
 import { useMemo } from 'react';

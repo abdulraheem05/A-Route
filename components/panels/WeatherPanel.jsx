@@ -1,5 +1,9 @@
 'use client';
-// Observed weather at the rover (REMS daily feed, D22).
+// Observed weather at the rover (Gale: the Curiosity REMS daily feed, D22).
+//
+// The instrument name, the dataset code and the caveats come from
+// crater.weather, so a crater with a different weather source — or none —
+// reads correctly here.
 //
 // Measured values only, always tied to a sol and to where the rover was on
 // that sol. The three readings people actually come for — air temperature,
@@ -9,6 +13,7 @@
 // This is a historical record, never a forecast and never "now".
 import { useMemo } from 'react';
 import { waypointIndexAtSol } from '@/lib/data/landmarks';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { formatLat, formatLon } from '@/lib/coordinates/projection';
 import { useStore } from '@/store/useStore';
 import { DatasetLink, EvidenceBadge, fmt } from '@/components/panels/ui';
@@ -75,6 +80,9 @@ function Stat({ label, value, unit, tone }) {
 }
 
 export default function WeatherPanel() {
+  const crater = useCrater();
+  const weatherCfg = crater.weather || {};
+  const instrument = weatherCfg.instrument || 'weather';
   const weather = useStore((s) => s.weather);
   const sol = useStore((s) => s.sol);
   const waypoints = useStore((s) => s.rover.waypoints);
@@ -91,8 +99,16 @@ export default function WeatherPanel() {
     return i < 0 ? null : waypoints[i];
   }, [record, waypoints]);
 
+  if (weather.status === 'unavailable') {
+    return (
+      <div className="px-2.5 py-3">
+        <p className="note">No weather observations exist for this crater in the datasets loaded here.</p>
+        {weather.error && <p className="note mt-1 opacity-70">{weather.error}</p>}
+      </div>
+    );
+  }
   if (weather.status === 'loading') {
-    return <p className="px-2.5 py-3 note">Loading the REMS feed…</p>;
+    return <p className="px-2.5 py-3 note">Loading the {instrument} feed…</p>;
   }
   if (weather.status === 'error') {
     return (
@@ -119,7 +135,7 @@ export default function WeatherPanel() {
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <EvidenceBadge kind="Measured" />
-          <DatasetLink id="D22" />
+          <DatasetLink id={weatherCfg.datasetId} />
         </div>
       </div>
 
@@ -205,8 +221,8 @@ export default function WeatherPanel() {
       <details className="science-details mt-1.5">
         <summary>About these observations</summary>
         <ul className="list-disc space-y-1 pl-4 note">
-          <li>Measured by REMS on Curiosity itself, so they describe one point in Gale, not the whole crater.</li>
-          <li>Wind has no calibrated speed or direction: the sensor was damaged early in the mission.</li>
+          <li>{weatherCfg.sourceNote}</li>
+          {weatherCfg.windNote && <li>{weatherCfg.windNote}</li>}
           <li>A long run of sols mixes seasonal change with the rover moving and climbing.</li>
           <li>Units follow NASA&rsquo;s feed (°C, Pa). Modelled local weather is not integrated.</li>
           <li>

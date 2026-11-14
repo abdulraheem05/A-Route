@@ -5,6 +5,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { waypointIndexAtSol } from '@/lib/data/landmarks';
+import { useCrater } from '@/lib/mars/CraterContext';
 import { cameraApi } from '@/lib/terrain/cameraApi';
 import { scenePosition } from '@/lib/terrain/place';
 import { useStore } from '@/store/useStore';
@@ -83,6 +84,8 @@ export function WaypointDots() {
 }
 
 export function RoverMarker() {
+  const crater = useCrater();
+  const roverName = (crater.rover && crater.rover.name) || 'Rover';
   const waypoints = useStore((s) => s.rover.waypoints);
   const sol = useStore((s) => s.sol);
   const exaggeration = useStore((s) => s.exaggeration);
@@ -121,7 +124,7 @@ export function RoverMarker() {
       </group>
       <Html center zIndexRange={[12, 0]} style={{ pointerEvents: 'none' }}>
         <div className="map-label -translate-y-6 rounded border border-accent/40 bg-black/70 px-1.5 py-0.5 text-[10px] text-accent">
-          Curiosity · sol {wp.sol}
+          {roverName} · sol {wp.sol}
         </div>
       </Html>
     </group>

@@ -1,6 +1,8 @@
 'use client';
+import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { lonLatToXZ } from '@/lib/coordinates/projection';
+import { useCrater } from '@/lib/mars/CraterContext';
 import BaseTerrain from '@/components/terrain/BaseTerrain';
 import DetailPatch from '@/components/terrain/DetailPatch';
 import CameraRig from '@/components/terrain/CameraRig';
@@ -10,16 +12,26 @@ import Traverse from '@/components/rover/Traverse';
 import { RoverMarker, WaypointDots } from '@/components/rover/Waypoints';
 import LandmarkMarkers from '@/components/layers/LandmarkMarkers';
 
-// Opening view: the whole crater, looking north-east across Aeolis Mons.
-const [TX, TZ] = lonLatToXZ(137.7, -5.0);
-const START = [TX - 60, 150, TZ + 190];
-
 export default function Viewport() {
+  const crater = useCrater();
+  // Opening view: the whole crater from the configured home target and offset.
+  // Gale's values are the originals (137.7°E, 5.0°S; offset -60, 150, +190).
+  // Memoised so the Canvas is not handed a new camera descriptor per render.
+  const { TX, TZ, cameraProps } = useMemo(() => {
+    const [tx, tz] = lonLatToXZ(crater.view.home.lon, crater.view.home.lat);
+    const { dx, y, dz } = crater.view.start;
+    return {
+      TX: tx,
+      TZ: tz,
+      cameraProps: { fov: 40, near: 1, far: 4000, position: [tx + dx, y, tz + dz] },
+    };
+  }, [crater]);
+
   return (
     <Canvas
       flat
       dpr={[1, 2]}
-      camera={{ fov: 40, near: 1, far: 4000, position: START }}
+      camera={cameraProps}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onCreated={({ gl, camera }) => {
         gl.setClearColor('#07080a');

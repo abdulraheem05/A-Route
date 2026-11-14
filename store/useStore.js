@@ -1,5 +1,29 @@
 import { create } from 'zustand';
 
+// State that belongs to the crater currently being explored, rather than to the
+// session. Kept in one place so switching crater can clear exactly this much
+// and leave the viewer's own display preferences alone.
+const craterScopedState = () => ({
+  terrain: { status: 'loading', meta: null, roverMeta: null, error: null },
+  imagery: { requested: 0, drawn: 0, done: false },
+  patch: null,
+  cursor: null,
+  selection: null,
+  rover: {
+    status: 'loading',
+    origin: null,
+    retrieved: null,
+    waypoints: [],
+    traverse: null,
+    join: null,
+    rejected: 0,
+    error: null,
+  },
+  sol: null,
+  weather: { status: 'loading', origin: null, retrieved: null, records: [], bySol: new Map(), anyWind: false, error: null },
+  measure: { active: false, points: [] },
+});
+
 export const useStore = create((set, get) => ({
   // --- terrain ---------------------------------------------------------
   // status: loading | ready | missing (no prepared DEM -> flat reference surface) | error
@@ -64,4 +88,7 @@ export const useStore = create((set, get) => ({
       return { measure: { ...s.measure, points: pts }, infoOpen: true, infoTab: 'selection' };
     }),
   clearMeasure: () => set((s) => ({ measure: { ...s.measure, points: [] } })),
+
+  // --- crater switching -------------------------------------------------
+  resetCraterState: () => set(craterScopedState()),
 }));

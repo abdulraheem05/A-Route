@@ -163,6 +163,21 @@
   font-family: inherit;
 }
 
+
+@keyframes panorama-popup-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panorama-popup-enter {
+  animation: panorama-popup-enter 300ms ease-out both;
+}
+
+
 @layer components {
   /* --- surfaces ---------------------------------------------------------- */
   .panel {
