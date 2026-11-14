@@ -16,6 +16,7 @@
  */
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { GRID_MOTION } from '@/lib/animation-config';
 import { isUnlocked } from '@/lib/destinations';
@@ -74,13 +75,19 @@ function ThumbnailPlaceholder({ destination, index }) {
 
 export default function DestinationCard({ destination, index = 0 }) {
   const [imageState, setImageState] = useState('loading');
+  const router = useRouter();
   const unlocked = isUnlocked(destination);
   const showPlaceholder = imageState !== 'loaded';
 
   return (
     <motion.li variants={GRID_MOTION.item} className="list-none">
       <article
+        onClick={() => unlocked && destination.id === 'gale' && router.push('/explore/gale')}
+        role={unlocked && destination.id === 'gale' ? 'link' : undefined}
+        tabIndex={unlocked && destination.id === 'gale' ? 0 : undefined}
+        onKeyDown={(event) => { if (event.key === 'Enter' && unlocked && destination.id === 'gale') router.push('/explore/gale'); }}
         className={[
+          unlocked && destination.id === 'gale' ? 'cursor-pointer' : '',
           'group relative flex h-full flex-col overflow-hidden rounded-sm border transition-all duration-500 ease-cinematic',
           unlocked
             ? 'border-mars-400/25 bg-gradient-to-b from-mars-900/70 to-black hover:-translate-y-1 hover:border-mars-200/55 hover:shadow-[0_18px_50px_-24px_rgba(232,131,43,0.55)]'
@@ -166,7 +173,7 @@ export default function DestinationCard({ destination, index = 0 }) {
 
           <span className="sr-only">
             {unlocked
-              ? 'Available. The interactive surface map opens in a later phase.'
+              ? 'Available. Gale opens the scientific terrain map.'
               : 'Locked. Not yet available for exploration.'}
           </span>
         </div>

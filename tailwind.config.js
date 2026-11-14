@@ -23,6 +23,7 @@ module.exports = {
     },
     extend: {
       colors: {
+        space: '#07080a', ink: '#0e1014', line: 'rgba(255,255,255,0.09)', accent: '#e8884a', measured: '#5fd0a0', derived: '#6cb6f5', interpreted: '#e9c46a', simulated: '#b79cf2',
         // Brand ramp sampled from the A-ROUTE wordmark gradient (see lib/brand.js).
         mars: {
           50: '#FDF3E6',

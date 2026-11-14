@@ -2,7 +2,7 @@
   "name": "a-route",
   "version": "0.1.0",
   "private": true,
-  "description": "A-ROUTE — Know the Ground. Phase 1: cinematic introduction and Mars destination selection.",
+  "description": "A-ROUTE \u2014 cinematic Mars exploration and Gale Crater scientific terrain workspace",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +15,8 @@
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

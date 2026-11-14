@@ -1,0 +1,73 @@
+{
+  "dataset_id": "D02",
+  "source_name": "30-m HRSC DTM Mosaic of Gale Crater (Persaud et al. 2021)",
+  "source_page": "https://zenodo.org/record/5808354",
+  "source_file": "data/raw/hrsc_km09_h1938_h1927_h1916-dtm-mosaic.tif",
+  "citation": "Persaud, D.M., Putri, A.D.R., Muller, J.-P., 2021, Zenodo, doi:10.5281/zenodo.5808354.",
+  "evidence_class": "Derived",
+  "res_m": 100.0,
+  "native_res_m": 30.0,
+  "resampling": "average",
+  "crs": "+proj=longlat +a=3396190 +b=3396190 +no_defs (planetocentric, east-positive)",
+  "units": "metres",
+  "nodata": -32768.0,
+  "min": -4681.3212890625,
+  "max": 1060.6654052734375,
+  "valid_fraction": 0.6774297871072065,
+  "applied_vertical_offset_m": 0.0,
+  "landing_check": {
+    "sampled_m": -4502.28759765625,
+    "expected_m": -4500.971,
+    "diff_m": -1.316597656250451
+  },
+  "bounds": {
+    "west": 135.1842593,
+    "east": 139.2413012,
+    "south": -6.5732988,
+    "north": -2.8077809
+  },
+  "levels": [
+    {
+      "file": "L0.bin",
+      "width": 2405,
+      "height": 2232,
+      "west": 135.1842593,
+      "north": -2.8077809,
+      "dx": 0.0016870604858115219,
+      "dy": 0.0016870604858115219,
+      "res_m": 100.0
+    },
+    {
+      "file": "L1.bin",
+      "width": 1202,
+      "height": 1116,
+      "west": 135.1842593,
+      "north": -2.8077809,
+      "dx": 0.0033741209716230437,
+      "dy": 0.0033741209716230437,
+      "res_m": 200.0
+    },
+    {
+      "file": "L2.bin",
+      "width": 601,
+      "height": 558,
+      "west": 135.1842593,
+      "north": -2.8077809,
+      "dx": 0.0067482419432460874,
+      "dy": 0.0067482419432460874,
+      "res_m": 400.0
+    },
+    {
+      "file": "L3.bin",
+      "width": 300,
+      "height": 279,
+      "west": 135.1842593,
+      "north": -2.8077809,
+      "dx": 0.013496483886492175,
+      "dy": 0.013496483886492175,
+      "res_m": 800.0
+    }
+  ],
+  "created": "2026-11-10T09:50:54.774032Z",
+  "tool": "scripts/prepare_terrain.py crater"
+}
