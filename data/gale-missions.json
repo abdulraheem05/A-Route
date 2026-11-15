@@ -114,13 +114,6 @@
     "target": "vera-rubin-ridge",
     "label": "Look around from the Vera Rubin Ridge panorama",
     "required": true
-   },
-   {
-    "id": "g06-site",
-    "type": "inspect",
-    "target": "vera-rubin-start",
-    "label": "Record an observation on the ridge",
-    "required": true
    }
   ],
   "discovery": "The ridge stands out from orbit for its hematite signature, which is why the team spent a long campaign on it.",
@@ -140,13 +133,6 @@
     "type": "panorama",
     "target": "glen-torridon",
     "label": "Look around from the Glen Torridon panorama",
-    "required": true
-   },
-   {
-    "id": "g07-site",
-    "type": "inspect",
-    "target": "aberlady",
-    "label": "Inspect the Aberlady target",
     "required": true
    }
   ],

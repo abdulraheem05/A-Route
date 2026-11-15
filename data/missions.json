@@ -30,6 +30,7 @@
     "objectives": [
       {
         "id": "m02-roubion",
+        "image": "/images/jezero/specimens/roubion.png",
         "type": "inspect",
         "target": "roubion",
         "label": "Inspect Roubion, the first coring attempt",
@@ -96,13 +97,6 @@
     "objective": "Explore the exposed delta-front layers at Rockytop Scarp.",
     "objectives": [
       {
-        "id": "m05-wildcat",
-        "type": "inspect",
-        "target": "wildcat-organics",
-        "label": "Inspect the Wildcat Ridge mudstone",
-        "required": true
-      },
-      {
         "id": "m05-wildcatpano",
         "type": "panorama",
         "target": "rockytop-scarp",
@@ -148,20 +142,6 @@
         "target": "belva-crater",
         "label": "View Belva crater",
         "required": true
-      },
-      {
-        "id": "m07-boulders",
-        "type": "inspect",
-        "target": "boulders",
-        "label": "Inspect the fan-top boulder field",
-        "required": true
-      },
-      {
-        "id": "m07-margin",
-        "type": "inspect",
-        "target": "margin-unit",
-        "label": "Inspect the margin unit carbonates",
-        "required": true
       }
     ],
     "discovery": "Boulders on the fan top record violent late floods. The margin's carbonates formed with water, but whether on a lake shore or underground is still argued.",
@@ -182,13 +162,6 @@
         "target": "bright-angel",
         "label": "View the Bright Angel outcrop",
         "required": true
-      },
-      {
-        "id": "m08-cheyava",
-        "type": "inspect",
-        "target": "cheyava-falls",
-        "label": "Inspect the Cheyava Falls rock",
-        "required": true
       }
     ],
     "discovery": "Cheyava Falls contains organic carbon and mineral 'leopard spots' that could be a trace of ancient microbes or of non-living chemistry. It is a potential biosignature and remains unresolved.",
@@ -208,13 +181,6 @@
         "type": "panorama",
         "target": "lookout-hill",
         "label": "View the rim crest at Lookout Hill",
-        "required": true
-      },
-      {
-        "id": "m09-silver",
-        "type": "inspect",
-        "target": "silver-mountain",
-        "label": "Inspect the Silver Mountain core site",
         "required": true
       }
     ],
