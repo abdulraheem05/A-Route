@@ -10,9 +10,10 @@
 import dynamic from 'next/dynamic';
 import CraterWorkspace from '@/components/CraterWorkspace';
 import jezero from '@/lib/mars/craters/jezero';
+import { JEZERO_GAME } from '@/lib/mars/gameCraters';
 
-const JezeroGame = dynamic(() => import('@/components/game/Game'), { ssr: false });
+const Game = dynamic(() => import('@/components/game/Game'), { ssr: false });
 
 export default function JezeroWorkspace({ mode = 'MAP' }) {
-  return <CraterWorkspace crater={jezero} mode={mode} play={<JezeroGame />} />;
+  return <CraterWorkspace crater={jezero} mode={mode} play={<Game crater={JEZERO_GAME} />} />;
 }

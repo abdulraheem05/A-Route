@@ -1,0 +1,244 @@
+[
+ {
+  "id": "g01",
+  "sequence": 1,
+  "title": "Arrival at Bradbury Landing",
+  "location": "Bradbury Landing",
+  "sols": "0-99",
+  "campaign": "Landing and checkout",
+  "objective": "Get your bearings at the landing site.",
+  "objectives": [
+   {
+    "id": "g01-pano",
+    "type": "panorama",
+    "target": "bradbury-landing",
+    "label": "Look around from the landing panorama",
+    "required": true
+   }
+  ],
+  "discovery": "Curiosity landed on the floor of Gale in August 2012, between the crater’s northern rim and the layered mound at its centre.",
+  "nextMission": "g02"
+ },
+ {
+  "id": "g02",
+  "sequence": 2,
+  "title": "Yellowknife Bay: an ancient lake",
+  "location": "Yellowknife Bay",
+  "sols": "100-300",
+  "campaign": "Glenelg and Yellowknife Bay",
+  "objective": "Reach the Sheepbed mudstone and inspect the Cumberland hole.",
+  "objectives": [
+   {
+    "id": "g02-drill",
+    "type": "inspect",
+    "target": "cumberland",
+    "label": "Inspect the Cumberland drill site",
+    "required": true
+   }
+  ],
+  "discovery": "The mudstone at Yellowknife Bay was laid down in a shallow lake, and carries clay minerals and sulfate salts alongside detrital basaltic minerals.",
+  "nextMission": "g03"
+ },
+ {
+  "id": "g03",
+  "sequence": 3,
+  "title": "The Kimberley: Windjana",
+  "location": "The Kimberley",
+  "sols": "600-650",
+  "campaign": "Crossing the crater floor",
+  "objective": "Inspect the Windjana drill site in the Kimberley sandstone.",
+  "objectives": [
+   {
+    "id": "g03-drill",
+    "type": "inspect",
+    "target": "windjana",
+    "label": "Inspect the Windjana drill site",
+    "required": true
+   }
+  ],
+  "discovery": "Windjana sampled a sandstone outcrop on the crater floor, the third hole of the mission.",
+  "nextMission": "g04"
+ },
+ {
+  "id": "g04",
+  "sequence": 4,
+  "title": "Pahrump Hills: entering Mount Sharp",
+  "location": "Pahrump Hills",
+  "sols": "750-800",
+  "campaign": "Base of Mount Sharp",
+  "objective": "Reach the first Mount Sharp strata and record the view.",
+  "objectives": [
+   {
+    "id": "g04-pano",
+    "type": "panorama",
+    "target": "pahrump-hills",
+    "label": "Look around from the Pahrump Hills panorama",
+    "required": true
+   }
+  ],
+  "discovery": "Pahrump Hills is where Curiosity first reached the Murray formation at the base of the Mount Sharp group.",
+  "nextMission": "g05"
+ },
+ {
+  "id": "g05",
+  "sequence": 5,
+  "title": "Buckskin: the silica stop",
+  "location": "Marias Pass",
+  "sols": "1050-1080",
+  "campaign": "Lower Mount Sharp",
+  "objective": "Inspect the Buckskin drill site.",
+  "objectives": [
+   {
+    "id": "g05-drill",
+    "type": "inspect",
+    "target": "buckskin",
+    "label": "Inspect the Buckskin drill site",
+    "required": true
+   }
+  ],
+  "discovery": "Buckskin was drilled on the lower slopes of the mountain at Marias Pass.",
+  "nextMission": "g06"
+ },
+ {
+  "id": "g06",
+  "sequence": 6,
+  "title": "Vera Rubin Ridge",
+  "location": "Vera Rubin Ridge",
+  "sols": "1700-2300",
+  "campaign": "Vera Rubin Ridge campaign",
+  "objective": "Explore the ridge and record the view.",
+  "objectives": [
+   {
+    "id": "g06-pano",
+    "type": "panorama",
+    "target": "vera-rubin-ridge",
+    "label": "Look around from the Vera Rubin Ridge panorama",
+    "required": true
+   },
+   {
+    "id": "g06-site",
+    "type": "inspect",
+    "target": "vera-rubin-start",
+    "label": "Record an observation on the ridge",
+    "required": true
+   }
+  ],
+  "discovery": "The ridge stands out from orbit for its hematite signature, which is why the team spent a long campaign on it.",
+  "nextMission": "g07"
+ },
+ {
+  "id": "g07",
+  "sequence": 7,
+  "title": "Glen Torridon: the clay-bearing unit",
+  "location": "Glen Torridon",
+  "sols": "2300-2900",
+  "campaign": "Glen Torridon campaign",
+  "objective": "Explore Glen Torridon and inspect Aberlady.",
+  "objectives": [
+   {
+    "id": "g07-pano",
+    "type": "panorama",
+    "target": "glen-torridon",
+    "label": "Look around from the Glen Torridon panorama",
+    "required": true
+   },
+   {
+    "id": "g07-site",
+    "type": "inspect",
+    "target": "aberlady",
+    "label": "Inspect the Aberlady target",
+    "required": true
+   }
+  ],
+  "discovery": "Glen Torridon carried the strongest clay signature on the mountain from orbit, and the campaign found the highest clay abundances of the mission.",
+  "nextMission": "g08"
+ },
+ {
+  "id": "g08",
+  "sequence": 8,
+  "title": "Mont Mercou: layers of Mars",
+  "location": "Mont Mercou",
+  "sols": "3050-3100",
+  "campaign": "Climbing the mountain",
+  "objective": "Profile the cliff and record the view from the top.",
+  "objectives": [
+   {
+    "id": "g08-pano",
+    "type": "panorama",
+    "target": "mont-mercou",
+    "label": "Look around from the Mont Mercou panorama",
+    "required": true
+   },
+   {
+    "id": "g08-site",
+    "type": "inspect",
+    "target": "mont-mercou-cliff",
+    "label": "Inspect the cliff face",
+    "required": true
+   }
+  ],
+  "discovery": "Mont Mercou is a six-metre cliff of bedded sedimentary rock that the rover circled, imaged from several angles, and then climbed.",
+  "nextMission": "g09"
+ },
+ {
+  "id": "g09",
+  "sequence": 9,
+  "title": "Greenheugh Pediment",
+  "location": "Greenheugh Pediment",
+  "sols": "3380-3420",
+  "campaign": "Climbing the mountain",
+  "objective": "Reach the pediment and inspect the capping rocks.",
+  "objectives": [
+   {
+    "id": "g09-pano",
+    "type": "panorama",
+    "target": "greenheugh-pediment",
+    "label": "Look around from the Greenheugh Pediment panorama",
+    "required": true
+   },
+   {
+    "id": "g09-site",
+    "type": "inspect",
+    "target": "greenheugh-caprock",
+    "label": "Inspect the caprock",
+    "required": true
+   }
+  ],
+  "discovery": "The pediment is capped by a different formation from the sedimentary layers that built the mountain below it.",
+  "nextMission": "g10"
+ },
+ {
+  "id": "g10",
+  "sequence": 10,
+  "title": "Point Lake and Paraitepuy Pass",
+  "location": "Point Lake; Paraitepuy Pass",
+  "sols": "106; 3550-3580",
+  "campaign": "The long expedition",
+  "objective": "Look back at where the mission began, then thread the pass.",
+  "objectives": [
+   {
+    "id": "g10-pano",
+    "type": "panorama",
+    "target": "point-lake",
+    "label": "Look around from the Point Lake panorama",
+    "required": true
+   },
+   {
+    "id": "g10-pass",
+    "type": "panorama",
+    "target": "paraitepuy-pass",
+    "label": "Look around from the Paraitepuy Pass panorama",
+    "required": true
+   },
+   {
+    "id": "g10-site",
+    "type": "inspect",
+    "target": "paraitepuy-buttes",
+    "label": "Inspect the buttes beside the pass",
+    "required": true
+   }
+  ],
+  "discovery": "Point Lake looks out over Yellowknife Bay in the mission’s first months; Paraitepuy Pass is nine years further up the mountain.",
+  "nextMission": null
+ }
+]

@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test:gale": "node --no-warnings --import ./scripts/register-alias.mjs scripts/gale-regression.mjs --check"
+    "test:gale": "node --no-warnings --import ./scripts/register-alias.mjs scripts/gale-regression.mjs --check",
+    "test:gale-world": "node --import ./scripts/register-alias.mjs scripts/validate-gale-world.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.0",

@@ -1,0 +1,27 @@
+{
+ "width": 713,
+ "height": 773,
+ "lonMin": 137.00037991297611,
+ "lonMax": 138.20156697887393,
+ "latMin": -5.401636396935215,
+ "latMax": -4.09922570188872,
+ "elevMin": -4631.71142578125,
+ "elevMax": 805.7824096679688,
+ "encoding": "uint16-le, row 0 = north, elev = elevMin + v/65535*(elevMax-elevMin)",
+ "metresPerPixel": 100.0,
+ "calibrated": true,
+ "kind": "dem",
+ "source": "30-m HRSC DTM Mosaic of Gale Crater (Persaud et al. 2021)",
+ "sourceDatasetId": "D02",
+ "citation": "Persaud, D.M., Putri, A.D.R., Muller, J.-P., 2021, Zenodo, doi:10.5281/zenodo.5808354.",
+ "method": "Cropped from the prepared 100 m grid in public/data/terrain/crater (itself read from the source DEM) and quantised to 16 bits.",
+ "limitations": [
+  "Grid spacing is 100 m, so nothing smaller than that is represented.",
+  "No no-data cells in this window.",
+  "Quantisation step is 0.083 m over a 5437 m range."
+ ],
+ "validFractionBeforeFill": 1.0,
+ "created": "2026-11-14T23:10:02.651136+00:00",
+ "tool": "scripts/prepare_game_terrain.py",
+ "region": "Aeolis Palus and the northern flank of Aeolis Mons"
+}

@@ -113,6 +113,7 @@ from a source, and the file names the source beside each one:
 | landing site | first record of NASA's M20 waypoint file, already in this project as `LANDING` in `lib/mars/constants-jezero.js` |
 | elevation | Mars 2020 Science Investigation CTX DEM Mosaic, 20 m/pixel (registry JZ20) |
 | waypoints | `M20_waypoints.json`, with `data/traverse.json` as the bundled fallback |
+| weather | `mars.nasa.gov/rss/api/?feed=weather&category=mars2020&feedtype=json` — MEDA summaries, array named `sols` rather than Curiosity's `soles` |
 | landmarks | `data/science-objects.json` and `data/sources.json`, this project's own sourced Jezero catalogue; plus two IAU features whose gazetteer entries were read |
 | crater centre and diameter | IAU gazetteer; 45 km as published in USGS SIM 3464 — used only to frame the opening camera |
 
@@ -144,9 +145,12 @@ than showing a placeholder:
   (`MSL_traverse.json`). No verified Mars 2020 equivalent was found, so
   `traverseUrl` is `null`: drive-end waypoints are drawn and no straight-line
   guess is drawn between them.
-- **Weather.** Perseverance carries MEDA, but no public per-sol summary feed
-  matching this app's adapter was verified, so `weather` is `null` and the
-  panel says so.
+- **Weather for most sols.** MEDA summaries come from the same NASA service as
+  Curiosity's REMS feed, but the Mars 2020 feed returns only a short span of
+  sols rather than the whole mission, and publishes air temperature and
+  pressure only. The panel reports the span it actually received and says when
+  the selected sol has no record. The complete MEDA record is in the PDS
+  Atmospheres archive, which is not integrated.
 - **Geological units.** The published mapping exists (USGS SIM 3464) but has
   not been read into the app, so `geology.units` is empty and the panel says
   so. Nothing is asserted in its place.

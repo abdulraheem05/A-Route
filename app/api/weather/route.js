@@ -1,5 +1,5 @@
 // Server-side adapter for rover daily weather summaries (Curiosity REMS:
-// registry D22).
+// registry D22; Mars 2020 MEDA: JZ22).
 //
 // `mission` defaults to msl, so /api/weather — the URL the Gale workspace
 // requests — behaves exactly as it did before this parameter existed.
@@ -13,6 +13,15 @@ const MISSIONS = {
     snapshot: 'weather.json',
     // The feed's array of per-sol records.
     recordsKey: 'soles',
+  },
+  // Perseverance. Same service, same per-sol fields, different array name —
+  // and a far shorter record: at the time of writing it carries a single week
+  // of sols rather than the whole mission. The panel reports the span it
+  // actually received, so this stays accurate if NASA extends it.
+  m20: {
+    feed: 'https://mars.nasa.gov/rss/api/?feed=weather&category=mars2020&feedtype=json',
+    snapshot: 'm20/weather.json',
+    recordsKey: 'sols',
   },
 };
 
@@ -42,7 +51,7 @@ export async function GET(request) {
     });
   } catch (liveError) {
     try {
-      const file = path.join(process.cwd(), 'public', 'data', 'rover', mission.snapshot);
+      const file = path.join(process.cwd(), 'public', 'data', 'rover', ...mission.snapshot.split('/'));
       const text = await fs.readFile(file, 'utf8');
       const stat = await fs.stat(file);
       return new Response(text, {

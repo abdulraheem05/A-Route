@@ -34,14 +34,7 @@
         "target": "roubion",
         "label": "Inspect Roubion, the first coring attempt",
         "required": true
-      },
-      {
-        "id": "m02-rochette",
-        "type": "inspect",
-        "target": "rochette",
-        "label": "Inspect Rochette, source of the first cores",
-        "required": true
-      }
+      }   
     ],
     "discovery": "The crater floor is igneous rock altered by water. Because igneous rock can be dated, these cores could give Jezero's history real ages once they are on Earth.",
     "nextMission": "m03"
@@ -81,14 +74,7 @@
     "sols": "340-380",
     "campaign": "Crater Floor Campaign",
     "objective": "Retrace the route north and collect the last crater-floor cores.",
-    "objectives": [
-      {
-        "id": "m04-sid",
-        "type": "inspect",
-        "target": "sid",
-        "label": "Inspect the Sid sample target",
-        "required": true
-      },
+    "objectives": [   
       {
         "id": "m04-sidpano",
         "type": "panorama",

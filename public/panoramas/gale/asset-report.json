@@ -1,0 +1,143 @@
+{
+ "panoramas": [
+  {
+   "id": "bradbury-landing",
+   "originalFilename": "Bradbury Landing Panorama.jpg",
+   "originalWidth": 8000,
+   "originalHeight": 3052,
+   "originalFormat": "JPEG",
+   "originalMode": "RGB",
+   "width": 7200,
+   "height": 2747,
+   "aspect": 2.621,
+   "file": "/panoramas/gale/bradbury-landing.jpg",
+   "thumb": "/panoramas/gale/thumbs/bradbury-landing.jpg"
+  },
+  {
+   "id": "pahrump-hills",
+   "originalFilename": "Pahrump Hills Panorama.jpg",
+   "originalWidth": 6886,
+   "originalHeight": 2279,
+   "originalFormat": "JPEG",
+   "originalMode": "RGB",
+   "width": 6886,
+   "height": 2279,
+   "aspect": 3.022,
+   "file": "/panoramas/gale/pahrump-hills.jpg",
+   "thumb": "/panoramas/gale/thumbs/pahrump-hills.jpg"
+  },
+  {
+   "id": "vera-rubin-ridge",
+   "originalFilename": "Vera Rubin Ridge Panorama.jpg",
+   "originalWidth": 4697,
+   "originalHeight": 2263,
+   "originalFormat": "JPEG",
+   "originalMode": "RGB",
+   "width": 4697,
+   "height": 2263,
+   "aspect": 2.076,
+   "file": "/panoramas/gale/vera-rubin-ridge.jpg",
+   "thumb": "/panoramas/gale/thumbs/vera-rubin-ridge.jpg"
+  },
+  {
+   "id": "glen-torridon",
+   "originalFilename": "Glen Torridon Panorama.jpg",
+   "originalWidth": 2916,
+   "originalHeight": 859,
+   "originalFormat": "JPEG",
+   "originalMode": "RGB",
+   "width": 2916,
+   "height": 859,
+   "aspect": 3.395,
+   "file": "/panoramas/gale/glen-torridon.jpg",
+   "thumb": "/panoramas/gale/thumbs/glen-torridon.jpg"
+  },
+  {
+   "id": "mont-mercou",
+   "originalFilename": "Mont Mercou Panorama.jpg",
+   "originalWidth": 1600,
+   "originalHeight": 433,
+   "originalFormat": "JPEG",
+   "originalMode": "RGB",
+   "width": 1600,
+   "height": 433,
+   "aspect": 3.695,
+   "file": "/panoramas/gale/mont-mercou.jpg",
+   "thumb": "/panoramas/gale/thumbs/mont-mercou.jpg"
+  },
+  {
+   "id": "greenheugh-pediment",
+   "originalFilename": "Greenheugh Pediment Panorama.jpg",
+   "originalWidth": 1600,
+   "originalHeight": 900,
+   "originalFormat": "JPEG",
+   "originalMode": "RGB",
+   "width": 1600,
+   "height": 900,
+   "aspect": 1.778,
+   "file": "/panoramas/gale/greenheugh-pediment.jpg",
+   "thumb": "/panoramas/gale/thumbs/greenheugh-pediment.jpg"
+  },
+  {
+   "id": "point-lake",
+   "originalFilename": "Point Lake Panorama.jpg",
+   "originalWidth": 4333,
+   "originalHeight": 932,
+   "originalFormat": "JPEG",
+   "originalMode": "RGB",
+   "width": 4333,
+   "height": 932,
+   "aspect": 4.649,
+   "file": "/panoramas/gale/point-lake.jpg",
+   "thumb": "/panoramas/gale/thumbs/point-lake.jpg"
+  },
+  {
+   "id": "paraitepuy-pass",
+   "originalFilename": "paraitepuy-pass Panorama.jpg",
+   "originalWidth": 29163,
+   "originalHeight": 8638,
+   "originalFormat": "JPEG",
+   "originalMode": "RGB",
+   "width": 7200,
+   "height": 2133,
+   "aspect": 3.376,
+   "file": "/panoramas/gale/paraitepuy-pass.jpg",
+   "thumb": "/panoramas/gale/thumbs/paraitepuy-pass.jpg"
+  }
+ ],
+ "specimens": [
+  {
+   "id": "cumberland",
+   "originalFilename": "Cumberland Drilling details.png",
+   "originalWidth": 1920,
+   "originalHeight": 1080,
+   "originalFormat": "PNG",
+   "originalMode": "RGBA",
+   "width": 1920,
+   "height": 1080,
+   "image": "/specimens/gale/cumberland.jpg"
+  },
+  {
+   "id": "windjana",
+   "originalFilename": "Windjana Drilling details.png",
+   "originalWidth": 1917,
+   "originalHeight": 1078,
+   "originalFormat": "PNG",
+   "originalMode": "RGBA",
+   "width": 1917,
+   "height": 1078,
+   "image": "/specimens/gale/windjana.jpg"
+  },
+  {
+   "id": "buckskin",
+   "originalFilename": "Buckskin Drilling details.png",
+   "originalWidth": 1917,
+   "originalHeight": 1078,
+   "originalFormat": "PNG",
+   "originalMode": "RGBA",
+   "width": 1917,
+   "height": 1078,
+   "image": "/specimens/gale/buckskin.jpg"
+  }
+ ]
+}

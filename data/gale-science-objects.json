@@ -1,0 +1,238 @@
+[
+ {
+  "id": "bradbury-arrival",
+  "name": "Bradbury Landing",
+  "sol": 3,
+  "missionId": "g01",
+  "category": "Observation target",
+  "image": null,
+  "unit": null,
+  "summary": "The first ground Curiosity stood on, on the floor of Gale between the northern rim and the mound at its centre.",
+  "composition": null,
+  "finding": "Where Curiosity touched down in August 2012. First record of NASA’s waypoint file.",
+  "whyItMatters": null,
+  "geologicalContext": null,
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "Where Curiosity touched down in August 2012. First record of NASA’s waypoint file."
+   }
+  ],
+  "sources": [
+   "NASA waypoint file, first record (sol 3, RMC 2_0)"
+  ]
+ },
+ {
+  "id": "cumberland",
+  "name": "Cumberland drill hole",
+  "sol": 279,
+  "missionId": "g02",
+  "category": "Drill site",
+  "image": "/specimens/gale/cumberland.jpg",
+  "imageAlt": "NASA drill-site image: Cumberland drill hole",
+  "imageSource": "Delivered original Cumberland Drilling details.png (1920x1080), NASA/JPL-Caltech/MSSS",
+  "unit": "Sheepbed member, Yellowknife Bay formation",
+  "summary": "The second hole Curiosity drilled, a few metres from John Klein in the Sheepbed mudstone at Yellowknife Bay.",
+  "composition": null,
+  "finding": "First drilled sample. Mudstone interpreted as a shallow-lake deposit; the samples contain clay minerals and sulfate salts alongside detrital basaltic minerals.",
+  "whyItMatters": null,
+  "geologicalContext": "Unit: Sheepbed member, Yellowknife Bay formation.",
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "Second drilled sample, a few metres from John Klein."
+   }
+  ],
+  "sources": [
+   "Drill sol: Curiosity drill-attempt table (PMC8981195, Table 3) / NASA image captions"
+  ]
+ },
+ {
+  "id": "windjana",
+  "name": "Windjana drill hole",
+  "sol": 621,
+  "missionId": "g03",
+  "category": "Drill site",
+  "image": "/specimens/gale/windjana.jpg",
+  "imageAlt": "NASA drill-site image: Windjana drill hole",
+  "imageSource": "Delivered original Windjana Drilling details.png (1917x1078), NASA/JPL-Caltech/MSSS",
+  "unit": null,
+  "summary": "A hole drilled into a sandstone outcrop at the Kimberley, on the crater floor.",
+  "composition": null,
+  "finding": "Sandstone outcrop on the crater floor; third drilled sample.",
+  "whyItMatters": null,
+  "geologicalContext": null,
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "Sandstone outcrop on the crater floor; third drilled sample."
+   }
+  ],
+  "sources": [
+   "Drill sol: Curiosity drill-attempt table (PMC8981195, Table 3) / NASA image captions"
+  ]
+ },
+ {
+  "id": "confidence-hills",
+  "name": "Confidence Hills, Pahrump Hills",
+  "sol": 759,
+  "missionId": "g04",
+  "category": "Observation target",
+  "image": null,
+  "unit": "Murray formation (base of the Mount Sharp group)",
+  "summary": "The first sample of the Murray formation, where Curiosity reached the base of the Mount Sharp strata.",
+  "composition": null,
+  "finding": "Where Curiosity first reached Mount Sharp strata; first sample of the Murray formation.",
+  "whyItMatters": null,
+  "geologicalContext": "Unit: Murray formation (base of the Mount Sharp group).",
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "Where Curiosity first reached Mount Sharp strata; first sample of the Murray formation."
+   }
+  ],
+  "sources": [
+   "Drill sol: Curiosity drill-attempt table (PMC8981195, Table 3) / NASA image captions"
+  ]
+ },
+ {
+  "id": "buckskin",
+  "name": "Buckskin drill hole",
+  "sol": 1060,
+  "missionId": "g05",
+  "category": "Drill site",
+  "image": "/specimens/gale/buckskin.jpg",
+  "imageAlt": "NASA drill-site image: Buckskin drill hole",
+  "imageSource": "Delivered original Buckskin Drilling details.png (1917x1078), NASA/JPL-Caltech/MSSS",
+  "unit": null,
+  "summary": "A hole drilled at Marias Pass on the lower slopes of the mountain.",
+  "composition": null,
+  "finding": "Drilled sample.",
+  "whyItMatters": null,
+  "geologicalContext": null,
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "Drilled sample."
+   }
+  ],
+  "sources": [
+   "Drill sol: Curiosity drill-attempt table (PMC8981195, Table 3) / NASA image captions"
+  ]
+ },
+ {
+  "id": "vera-rubin-start",
+  "name": "Vera Rubin Ridge",
+  "sol": 1726,
+  "missionId": "g06",
+  "category": "Observation target",
+  "image": null,
+  "unit": null,
+  "summary": "The start of the ridge campaign, on terrain picked out from orbit by its hematite signature.",
+  "composition": null,
+  "finding": null,
+  "whyItMatters": null,
+  "geologicalContext": null,
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "The start of the ridge campaign, on terrain picked out from orbit by its hematite signature."
+   }
+  ],
+  "sources": [
+   "Curiosity drill-attempt table (PMC8981195, Table 3) and NASA image captions, via the project landmark registry"
+  ]
+ },
+ {
+  "id": "aberlady",
+  "name": "Aberlady, Glen Torridon",
+  "sol": 2370,
+  "missionId": "g07",
+  "category": "Observation target",
+  "image": null,
+  "unit": null,
+  "summary": "The first drill site in Glen Torridon, the region with the strongest clay signature from orbit.",
+  "composition": null,
+  "finding": "First drill site in Glen Torridon, the region with the strongest clay signature from orbit. The campaign (January 2019 – January 2021) covered about 5 km and 11 drill holes and found the highest clay abundances of the mission.",
+  "whyItMatters": null,
+  "geologicalContext": null,
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "First drill site in Glen Torridon, the region with the strongest clay signature from orbit. The campaign (January 2019 – January 2021) covered about 5 km and 11 drill holes and found the highest clay abundances of the mission."
+   }
+  ],
+  "sources": [
+   "Drill sol: Curiosity drill-attempt table (PMC8981195, Table 3) / NASA image captions; Bennett et al. 2023, doi:10.1029/2022JE007185"
+  ]
+ },
+ {
+  "id": "mont-mercou-cliff",
+  "name": "Mont Mercou cliff face",
+  "sol": 3086,
+  "missionId": "g08",
+  "category": "Observation target",
+  "image": null,
+  "unit": null,
+  "summary": "A cliff of bedded sedimentary rock about six metres high, profiled from several angles before the rover climbed it.",
+  "composition": null,
+  "finding": "The bedding exposed in the cliff records how these sedimentary rocks were laid down.",
+  "whyItMatters": null,
+  "geologicalContext": "The team circled the base to image the outcrop at different viewing geometries and illuminations, mapping its structures, then drilled at the top as a companion to the Nontron drill at its base.",
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "A cliff of bedded sedimentary rock about six metres high, profiled from several angles before the rover climbed it."
+   }
+  ],
+  "sources": [
+   "NASA Mars Science Laboratory mission blog, sols 3074-3089"
+  ]
+ },
+ {
+  "id": "greenheugh-caprock",
+  "name": "Greenheugh Pediment caprock",
+  "sol": 3397,
+  "missionId": "g09",
+  "category": "Observation target",
+  "image": null,
+  "unit": null,
+  "summary": "The rocks that cap the pediment: a different formation from the sedimentary layers that built the mountain below.",
+  "composition": null,
+  "finding": "A geological contact between the mountain strata and the unit that caps the pediment.",
+  "whyItMatters": null,
+  "geologicalContext": "The rover studied the sedimentary rocks below before driving up to the edge of the capping rocks.",
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "The rocks that cap the pediment: a different formation from the sedimentary layers that built the mountain below."
+   }
+  ],
+  "sources": [
+   "NASA Mars Science Laboratory mission blog, sols 3396-3397"
+  ]
+ },
+ {
+  "id": "paraitepuy-buttes",
+  "name": "Paraitepuy Pass buttes",
+  "sol": 3565,
+  "missionId": "g10",
+  "category": "Observation target",
+  "image": null,
+  "unit": null,
+  "summary": "Towering buttes and exposed layers on either side of a narrow pass, reached by picking a route over ripples and around boulders.",
+  "composition": null,
+  "finding": "The buttes expose the layering the team had been driving towards for years.",
+  "whyItMatters": null,
+  "geologicalContext": "The pass is guarded by large ripples and several large boulders; the drive threaded between them.",
+  "evidence": [
+   {
+    "level": "confirmed",
+    "text": "Towering buttes and exposed layers on either side of a narrow pass, reached by picking a route over ripples and around boulders."
+   }
+  ],
+  "sources": [
+   "NASA Mars Science Laboratory mission blog, sol 3565"
+  ]
+ }
+]

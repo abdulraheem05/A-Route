@@ -4,7 +4,10 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGame } from '@/lib/store';
 import { loadHeightfield } from '@/lib/terrain/heightfield';
-import { WORLD, MISSIONS, PANORAMAS } from '@/lib/scientific-data';
+import { WORLD, MISSIONS, PANORAMAS, setGameWorld } from '@/lib/scientific-data';
+import { setGameCrater } from '@/lib/mars/gameCrater';
+import { JEZERO_GAME } from '@/lib/mars/gameCraters';
+import { loadTraverse } from '@/lib/scientific-data/traverseSource';
 import Terrain from '@/components/terrain/Terrain';
 import Rocks from '@/components/world/Rocks';
 import { SUN_DIR, FOG_DENSITY } from '@/components/terrain/terrainMaterial';
@@ -24,15 +27,15 @@ import MissionComplete from '@/components/missions/MissionComplete';
 import CampaignCard from '@/components/missions/CampaignCard';
 
 const DPR = { low: 1, medium: 1.5, high: 2 };
-const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-export default function Game() {
+export default function Game({ crater = JEZERO_GAME }) {
   const [assets, setAssets] = useState(null);
   const [error, setError] = useState(null);
   const [steps, setSteps] = useState([
+    { label: 'Rover traverse', done: false },
     { label: 'Terrain height model', done: false },
     { label: 'Surface imagery', done: false },
-    { label: 'Rover traverse and mission data', done: false },
+    { label: 'Mission plan', done: false },
     { label: 'Panorama catalogue', done: false },
   ]);
   const ready = useGame((g) => g.ready);
@@ -52,25 +55,43 @@ export default function Game() {
     const mark = (i, detail) => setSteps((s) => s.map((x, k) => (k === i ? { ...x, done: true, detail } : x)));
     (async () => {
       try {
+        // The crater has to be set before anything reads the projection, the
+        // terrain paths or the save key.
+        setGameCrater(crater);
+
+        // Every site in the campaign is placed along the rover's traverse, so
+        // the traverse comes first. Jezero's ships with the project; Gale's is
+        // read from NASA's waypoint file through this project's own route. If
+        // it cannot be loaded the game says so instead of guessing positions.
+        const traverse = await loadTraverse(crater.traverse);
+        if (cancelled) return;
+        setGameWorld({ ...crater.db, traverse });
         useGame.getState().loadSave();
+        mark(0, traverse.note);
+
         const hf = await loadHeightfield();
         if (cancelled) return;
-        mark(0, `${hf.w}×${hf.h} · ${hf.meta.calibrated ? 'DEM' : 'preview-derived'}`);
-        surface = await new THREE.TextureLoader().loadAsync('/terrain/jezero-surface.jpg');
+        mark(1, `${hf.w}×${hf.h} · ${hf.meta.calibrated ? 'DEM' : 'preview-derived'}`);
+
+        surface = await new THREE.TextureLoader().loadAsync(crater.terrain.surfaceUrl);
         surface.anisotropy = 8;
         surface.wrapS = surface.wrapT = THREE.ClampToEdgeWrapping;
         if (cancelled) { surface.dispose(); return; }
-        mark(1);
-        await wait(250);
-        mark(2, `${WORLD.track.length} waypoints · ${MISSIONS.length} missions`);
-        await wait(250);
-        mark(3, `${PANORAMAS.length} images, loaded on demand`);
-        await wait(500);
+        mark(2);
+
+        mark(3, `${WORLD.sites.length} sites · ${MISSIONS.length} missions`);
+        mark(4, `${PANORAMAS.length} images, loaded on demand`);
         if (cancelled) return;
         setAssets({ hf, surface });
         useGame.getState().setReady(true);
       } catch (e) {
-        if (!cancelled) setError(String(e && e.message ? e.message : e) + ' — check that public/terrain contains jezero-height.u16, terrain-meta.json and jezero-surface.jpg.');
+        const msg = String(e && e.message ? e.message : e);
+        if (!cancelled) {
+          setError(
+            `${msg} — ${crater.name} loads ${crater.terrain.heightUrl}, ${crater.terrain.metaUrl} and ` +
+              `${crater.terrain.surfaceUrl}${crater.traverse.url ? `, and its rover traverse from ${crater.traverse.url}` : ''}.`
+          );
+        }
       }
     })();
     return () => {
@@ -81,7 +102,7 @@ export default function Game() {
       g.setReady(false);
       g.setPaused(false);
     };
-  }, []);
+  }, [crater]);
 
   return (
     <div className="relative h-screen w-screen select-none overflow-hidden bg-coal-950">

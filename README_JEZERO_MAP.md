@@ -78,6 +78,22 @@ Run `npm run fetch:traverse` to replace it with every official waypoint.
 NASA publishes no verified dense traverse path for Mars 2020, so no traverse
 line is drawn — the layer panel lists it under "Not available" with the reason.
 
+## 4b. Weather
+
+The weather panel reads MEDA summaries through `/api/weather?mission=m20`,
+which proxies NASA's Mars 2020 feed — the same service that serves Curiosity's
+REMS summaries, differing only in that its array is named `sols` rather than
+`soles`.
+
+That feed carries only a short span of sols, not the whole mission, so most
+sols have no reading. The panel does not hide this: it names the span it
+actually received and says when the selected sol falls outside it. It also
+publishes air temperature, pressure, Ls, season, sunrise and sunset only, so
+ground temperature, opacity, ultraviolet index, humidity and wind read as
+absent even though MEDA measures several of them.
+
+For an offline copy, save the feed to `public/data/rover/m20/weather.json`.
+
 ## 5. Run
 
 ```bash
@@ -96,8 +112,9 @@ Listed in the layer panel under "Not available", and in
   region but has not been read into this app;
 - the rover traverse path — no verified Mars 2020 equivalent of
   `MSL_traverse.json`;
-- observed weather — Perseverance carries MEDA, but no public per-sol summary
-  feed matching this app's adapter was verified;
+- observed weather for most sols — the public MEDA feed carries only a short
+  span of sols, so most of the mission has no reading; the complete record is
+  in the PDS Atmospheres archive, which is not integrated;
 - 1 m rover-region elevation — the HiRISE DTM is too large to prepare here.
 
 ## Testing

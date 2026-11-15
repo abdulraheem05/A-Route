@@ -3339,14 +3339,22 @@
      "north": 19.4453003
     }
    },
-   "weather": null,
+   "weather": {
+    "url": "/api/weather?mission=m20",
+    "datasetId": "JZ22",
+    "instrument": "MEDA",
+    "sourceNote": "Measured by MEDA on Perseverance itself, so they describe one point on the Jezero floor, not the whole crater.",
+    "windNote": "This feed publishes air temperature and pressure only. MEDA also measures wind, ground temperature, humidity and radiation, but none of those are in the public summaries.",
+    "archiveNote": "The public feed covers only a short span of sols and has no record for this one. The full MEDA record is in the PDS Atmospheres archive, which is not integrated."
+   },
    "geologyUnitCount": 0,
    "unavailableLayerCount": 4,
    "datasetIds": [
     "JZ05",
     "JZ06",
     "JZ12",
-    "JZ20"
+    "JZ20",
+    "JZ22"
    ]
   },
   "boundsMatchCtxFootprint": true,
