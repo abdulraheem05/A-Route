@@ -14,7 +14,8 @@ export default function CampaignCard({ mode }) {
   const craterName = isGale ? 'Gale Crater' : 'Jezero Crater';
   const roverName = isGale ? 'Curiosity' : 'Perseverance';
 
-  const mission = MISSIONS[0];
+  const missionIndex = useGame((g) => g.missionIndex);
+  const mission = MISSIONS[missionIndex] || MISSIONS[0];
   const finish = mode === 'finish';
 
   const description = isGale
