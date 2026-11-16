@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="./public/screenshots/A-ROUTE logo.png" alt="A-ROUTE Logo" width="450" align="center">
+<img src="./public/screenshots/A-ROUTE logo.png" alt="A-ROUTE Logo" width="300" align="center">
+
+<br>
+<br>
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-Frontend-61DAFB.svg)](https://react.dev/)
@@ -15,8 +18,10 @@
 
 [![NASA Space Apps Challenge](https://img.shields.io/badge/NASA%20Space%20Apps%20Challenge-Project-111827?style=for-the-badge&logo=nasa&logoColor=white)](https://www.spaceappschallenge.org/)
 
+🔗 https://a-route.vercel.app
 </div>
 
+<br>
 
 A-ROUTE is an interactive Mars mapping and exploration application developed for the **NASA Space Apps Challenge 2026 – Interplanetary Survival Guide: Martian Map**. It brings terrain data, rover records, and selected science observations into one spatial interface for **Gale Crater (Curiosity)** and **Jezero Crater (Perseverance)**.
 
