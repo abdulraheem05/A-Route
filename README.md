@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./public/screenshots/A-ROUTE logo.png" alt="A-ROUTE Logo" width="300" align="center">
+<img src="./public/screenshots/A-ROUTE logo.png" alt="A-ROUTE Logo" width="800" align="center">
 
 <br>
 <br>
