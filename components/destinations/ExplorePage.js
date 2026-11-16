@@ -63,7 +63,7 @@ export default function ExplorePage() {
   }, [done]);
 
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-black">
+    <main className="aroute-safe-page relative min-h-dvh overflow-hidden bg-black">
       <DestinationSelection onBack={() => router.push('/')} />
       {(!done || leaving) && (
         <div className={done ? 'mars-load-exit' : undefined}>

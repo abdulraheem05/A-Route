@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { X, Plus, Minus, LocateFixed, Layers, Camera, Navigation } from 'lucide-react';
 import { useGame } from '@/lib/store';
+import { useCompact } from '@/hooks/useViewport';
 import { WORLD, MISSIONS, PANORAMA_BY_ID } from '@/lib/scientific-data';
 import { odometerAtSol } from '@/lib/scientific-data/world';
 import { nextObjective, siteUnlocked } from '@/lib/missions';
@@ -16,6 +17,9 @@ const LAYERS = [
 ];
 
 export default function FullMap({ hf }) {
+  // Only used to decide which corners stay occupied on a small screen; every
+  // marker, layer, measurement and readout below is the same at any size.
+  const compact = useCompact();
   const canvasRef = useRef();
   const wrapRef = useRef();
   const view = useRef({ cx: 0, cz: 0, scale: 0.12 });
@@ -179,10 +183,10 @@ export default function FullMap({ hf }) {
       </div>
 
       {/* title + layer switch */}
-      <div className="pointer-events-none absolute left-6 top-5">
+      <div className="pointer-events-none absolute left-[calc(12px_+_var(--sa-l))] top-[calc(12px_+_var(--sa-t))] max-w-[calc(100vw_-_80px)] lg:left-6 lg:top-5 lg:max-w-none">
         <div className="text-[10px] uppercase tracking-hud text-mars-300">Mission map · north up</div>
-        <div className="text-xl font-light text-mars-50">Jezero Crater</div>
-        <div className="pointer-events-auto mt-3 flex items-center gap-1">
+        <div className="text-base font-light text-mars-50 lg:text-xl">Jezero Crater</div>
+        <div className="pointer-events-auto mt-3 flex flex-wrap items-center gap-1">
           <Layers size={13} className="mr-1 text-mars-200/70" />
           {LAYERS.map((l) => (
             <button key={l.id} type="button" onClick={() => { setLayer(l.id); dirty.current = true; }} className={`btn !py-1 !text-[10px] ${layer === l.id ? 'border-mars-400 bg-mars-500/30' : ''}`}>
@@ -201,28 +205,37 @@ export default function FullMap({ hf }) {
       </div>
 
       {/* close + zoom */}
-      <button type="button" onClick={close} aria-label="Close map" className="icon-btn absolute right-6 top-5 h-10 w-10"><X size={18} /></button>
-      <div className="absolute right-6 top-20 flex flex-col gap-2">
+      <button type="button" onClick={close} aria-label="Close map" className="icon-btn absolute right-[calc(12px_+_var(--sa-r))] top-[calc(12px_+_var(--sa-t))] h-11 w-11 lg:right-6 lg:top-5 lg:h-10 lg:w-10"><X size={18} /></button>
+      <div className="absolute right-[calc(12px_+_var(--sa-r))] top-[calc(68px_+_var(--sa-t))] flex flex-col gap-2 lg:right-6 lg:top-20">
         <button type="button" className="icon-btn" aria-label="Zoom in" onClick={() => { const r = canvasRef.current.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, r.width, r.height, 1.5); }}><Plus size={15} /></button>
         <button type="button" className="icon-btn" aria-label="Zoom out" onClick={() => { const r = canvasRef.current.getBoundingClientRect(); zoomAt(r.width / 2, r.height / 2, r.width, r.height, 1 / 1.5); }}><Minus size={15} /></button>
         <button type="button" className="icon-btn" aria-label="Centre on me" onClick={recenter}><LocateFixed size={15} /></button>
       </div>
 
-      {/* legend + cursor readout */}
-      <div className="panel pointer-events-none absolute bottom-12 left-6 px-3 py-2 text-[10px] leading-relaxed text-mars-100/80">
+      {/* legend + cursor readout. Hidden on a phone while a selection panel
+          is open, which is the only thing that would reach this corner. */}
+      {!(compact && (site || point)) && (
+      <div className="panel pointer-events-none absolute bottom-12 left-3 max-w-[70vw] px-3 py-2 text-[9.5px] leading-relaxed text-mars-100/80 lg:left-6 lg:max-w-none lg:text-[10px]">
         <div><span className="mr-2 inline-block h-0.5 w-5 bg-[#f1dfc4] align-middle" />Rover traverse ({WORLD.traverseMeta.resolution} official waypoints)</div>
         <div><span className="mr-2 inline-block h-0.5 w-5 border-t border-dashed border-ice-300 align-middle" />Proposed route (simulated)</div>
         <div><span className="mr-2 inline-block h-2 w-2 rounded-full border border-[#e08a4f] align-middle" />Panorama station <span className="ml-2 mr-1 inline-block h-2 w-2 rotate-45 border border-[#e08a4f] align-middle" /> Science feature</div>
         <div><span className="mr-2 inline-block h-2 w-2 rounded-full border border-[#a9c7dc] align-middle" />Next objective <span className="ml-2 mr-1 inline-block h-2 w-2 rounded-full border border-[#7a6f68] align-middle" /> Locked</div>
         <div className="text-mars-200/60">Dashed circles: position uncertainty of a station</div>
       </div>
-      <div className="pointer-events-none absolute bottom-3 left-6 font-mono text-[11px] text-mars-100/80">
-        {hover ? `${formatLat(hover.lat)}  ${formatLon(hover.lon)}  elev ≈${Math.round(hover.elev)} m  slope ${hover.slope.toFixed(1)}°` : 'Drag to pan · scroll to zoom · click a marker or the ground'}
+      )}
+      {!(compact && (site || point)) && (
+      <div className="pointer-events-none absolute bottom-3 left-3 right-3 font-mono text-[10px] text-mars-100/80 lg:left-6 lg:right-auto lg:text-[11px]">
+        {hover
+          ? `${formatLat(hover.lat)}  ${formatLon(hover.lon)}  elev ≈${Math.round(hover.elev)} m  slope ${hover.slope.toFixed(1)}°`
+          : compact
+          ? 'Drag to pan · pinch to zoom · tap a marker or the ground'
+          : 'Drag to pan · scroll to zoom · click a marker or the ground'}
       </div>
+      )}
 
       {/* archive of images with no established position */}
       {showArchive && (
-        <div className="panel thin-scroll absolute left-6 top-36 max-h-[50vh] w-72 overflow-y-auto p-3">
+        <div className="panel thin-scroll absolute inset-x-3 top-[146px] max-h-[40dvh] overflow-y-auto p-3 lg:inset-x-auto lg:left-6 lg:top-36 lg:max-h-[50vh] lg:w-72">
           <div className="mb-2 text-[11px] leading-snug text-mars-100/70">No acquisition sol could be established for these files, so they are not placed on the map.</div>
           {WORLD.unplaced.map((p) => (
             <button key={p.id} type="button" onClick={() => useGame.getState().openPanorama(p.id)} className="mb-2 block w-full overflow-hidden rounded border border-mars-200/15 text-left transition hover:border-mars-400">
@@ -235,7 +248,7 @@ export default function FullMap({ hf }) {
 
       {/* selection panel */}
       {(site || point) && (
-        <aside className="panel thin-scroll absolute bottom-6 right-6 top-56 w-[340px] overflow-y-auto p-4 rise-in">
+        <aside className="panel thin-scroll rise-in absolute inset-x-3 bottom-3 top-auto max-h-[52dvh] overflow-y-auto p-4 lg:inset-x-auto lg:bottom-6 lg:right-6 lg:top-56 lg:max-h-none lg:w-[340px]">
           {site && (
             <>
               <div className="flex items-start justify-between gap-3">

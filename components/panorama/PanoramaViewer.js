@@ -68,6 +68,9 @@ export default function PanoramaViewer() {
   const mission = item ? MISSIONS[item.missionIndex] : null;
   const look = useRef({ yaw: 0, pitch: 0, fov: 70 });
   const drag = useRef(null);
+  // Live touch points, so two fingers can pinch the field of view.
+  const pointers = useRef(new Map());
+  const pinch = useRef(null);
   const [status, setStatus] = useState('loading');
   const [showInfo, setShowInfo] = useState(false);
   const [span, setSpan] = useState(pano && pano.projection ? pano.projection.azimuthSpanDeg : 360);
@@ -82,15 +85,42 @@ export default function PanoramaViewer() {
   // Escape is handled globally in Player.js (it calls closePanorama).
 
   function onPointerDown(e) {
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    // A second finger starts a pinch instead of continuing the drag, so the
+    // view does not swing while the viewer is zooming.
+    if (pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      pinch.current = { dist: Math.hypot(a.x - b.x, a.y - b.y), fov: look.current.fov };
+      drag.current = null;
+      return;
+    }
     drag.current = { x: e.clientX, y: e.clientY, yaw: look.current.yaw, pitch: look.current.pitch };
     e.currentTarget.setPointerCapture(e.pointerId);
   }
   function onPointerMove(e) {
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    // Pinch: the same field of view the wheel adjusts, with the same limits.
+    const pz = pinch.current;
+    if (pz && pointers.current.size >= 2) {
+      const [a, b] = [...pointers.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      if (dist > 0 && pz.dist > 0) {
+        look.current.fov = Math.max(18, Math.min(95, pz.fov * (pz.dist / dist)));
+      }
+      return;
+    }
+
     const d = drag.current;
     if (!d) return;
     const k = (look.current.fov / 70) * 0.0032;
     look.current.yaw = d.yaw + (e.clientX - d.x) * k;
     look.current.pitch = Math.max(-1.55, Math.min(1.55, d.pitch + (e.clientY - d.y) * k));
+  }
+  function onPointerUp(e) {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+    drag.current = null;
   }
   function onWheel(e) {
     look.current.fov = Math.max(18, Math.min(95, look.current.fov + e.deltaY * 0.03));
@@ -99,12 +129,12 @@ export default function PanoramaViewer() {
   return (
     <div className={`absolute inset-0 z-40 bg-black transition-opacity duration-300 ${closing ? 'opacity-0' : 'fade-in'}`}>
       {flat ? (
-        <div className="flex h-full w-full items-center justify-center p-10">
+        <div className="flex h-full w-full items-center justify-center p-4 lg:p-10">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={pano.file} alt={pano.name} className="max-h-full max-w-full object-contain" onLoad={() => setStatus('ready')} onError={() => setStatus('error')} />
         </div>
       ) : (
-        <div className="h-full w-full cursor-grab touch-none active:cursor-grabbing" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={() => (drag.current = null)} onWheel={onWheel}>
+        <div className="h-full w-full cursor-grab touch-none active:cursor-grabbing" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp} onWheel={onWheel}>
           <Canvas flat camera={{ fov: 70, near: 0.1, far: 200, position: [0, 0, 0] }} dpr={[1, 2]}>
             <color attach="background" args={['#0a0807']} />
             <PanoBand pano={pano} span={span} look={look} onLoaded={() => setStatus('ready')} onError={() => setStatus('error')} />
@@ -115,22 +145,22 @@ export default function PanoramaViewer() {
       {status === 'loading' && <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-xs uppercase tracking-hud text-mars-200/70">Loading panorama…</div>}
       {status === 'error' && <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-red-200">Could not load {pano.file}</div>}
 
-      <div className="pointer-events-none absolute left-6 top-5 [text-shadow:0_1px_4px_rgba(0,0,0,0.9)]">
+      <div className="pointer-events-none absolute left-[calc(12px_+_var(--sa-l))] top-[calc(12px_+_var(--sa-t))] max-w-[calc(100vw_-_120px)] [text-shadow:0_1px_4px_rgba(0,0,0,0.9)] lg:left-6 lg:top-5 lg:max-w-none">
         <div className="text-[10px] uppercase tracking-hud text-mars-300">{flat ? 'Image' : 'Panorama'} · Mastcam-Z</div>
-        <div className="text-xl font-light text-mars-50">{pano.name}</div>
+        <div className="text-base font-light leading-snug text-mars-50 lg:text-xl">{pano.name}</div>
         <div className="font-mono text-[11px] text-mars-100/70">
           {pano.sols ? `sols ${pano.sols[0]}${pano.sols[1] !== pano.sols[0] ? '–' + pano.sols[1] : ''}` : 'sol unknown'}
           {site ? ` · ${site.lat.toFixed(5)}° N ${site.lon.toFixed(5)}° E` : ' · position unresolved'}
         </div>
       </div>
 
-      <div className="absolute right-6 top-5 flex gap-2">
+      <div className="absolute right-[calc(12px_+_var(--sa-r))] top-[calc(12px_+_var(--sa-t))] flex gap-2 lg:right-6 lg:top-5">
         <button type="button" className="icon-btn h-10 w-10" aria-label="Toggle information" onClick={() => setShowInfo((v) => !v)}><Info size={16} /></button>
         <button type="button" className="icon-btn h-10 w-10" aria-label="Exit panorama" onClick={close}><X size={18} /></button>
       </div>
 
       {showInfo && (
-        <div className="panel absolute bottom-6 left-6 w-[360px] p-4 rise-in">
+        <div className="panel thin-scroll rise-in absolute inset-x-3 bottom-[calc(12px_+_var(--sa-b))] max-h-[62dvh] overflow-y-auto p-4 lg:inset-x-auto lg:bottom-6 lg:left-6 lg:max-h-none lg:w-[360px] lg:overflow-visible">
           <p className="text-[12px] leading-relaxed text-mars-100/90">{describePanorama(pano, site, mission)}</p>
           {mission && <p className="mt-1.5 text-[12px] leading-relaxed text-mars-100/75">{mission.scientificContext}</p>}
           {site && site.hasObject && (
@@ -146,7 +176,7 @@ export default function PanoramaViewer() {
           <div className="mt-3 border-t border-mars-200/10 pt-3">
             <AskAI extra={{ panoramaId: pano.id, siteId: site ? site.id : null }} placeholder="Ask about this view…" />
           </div>
-          <div className="mt-2 text-[10px] text-mars-200/50">{pano.source} · drag to look, scroll to zoom, Esc to return</div>
+          <div className="mt-2 text-[10px] text-mars-200/50">{pano.source} · drag to look, pinch or scroll to zoom, Esc to return</div>
         </div>
       )}
     </div>

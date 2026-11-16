@@ -169,7 +169,7 @@ export default function ExperienceRoot() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative h-dvh w-full overflow-hidden bg-black">
+      <main className="aroute-safe-page relative h-dvh w-full overflow-hidden bg-black">
 
         {/* Accessible document heading */}
         <h1 className="sr-only">

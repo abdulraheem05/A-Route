@@ -14,8 +14,24 @@ import { RoverMarker, WaypointDots } from '@/components/rover/Waypoints';
 import LandmarkMarkers from '@/components/layers/LandmarkMarkers';
 import RouteLines from '@/components/layers/RouteLines';
 
+/**
+ * Upper bound on render resolution.
+ *
+ * Desktop keeps the original [1, 2]. A phone or tablet is capped at 1.5,
+ * which is the single largest saving available on mobile GPUs: the terrain
+ * grid, the elevation data, the imagery tiles and every derived value are
+ * untouched — only how many device pixels the same scene is rasterised into
+ * changes. Read once, outside the component, because changing `dpr` would
+ * otherwise recreate the WebGL context.
+ */
+function maxDpr() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 2;
+  return window.matchMedia('(max-width: 1023px)').matches ? 1.5 : 2;
+}
+
 export default function Viewport() {
   const crater = useCrater();
+  const dprRange = useMemo(() => [1, maxDpr()], []);
   // Opening view: the whole crater from the configured home target and offset.
   // Gale's values are the originals (137.7°E, 5.0°S; offset -60, 150, +190).
   // Memoised so the Canvas is not handed a new camera descriptor per render.
@@ -32,7 +48,7 @@ export default function Viewport() {
   return (
     <Canvas
       flat
-      dpr={[1, 2]}
+      dpr={dprRange}
       camera={cameraProps}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onCreated={({ gl, camera }) => {

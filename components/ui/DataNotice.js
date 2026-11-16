@@ -10,13 +10,13 @@ export default function DataNotice({ hf }) {
   const conf = (c) => WORLD.sites.filter((s) => s.confidence === c).length;
   return (
     <div className="absolute inset-0 z-[37] flex items-center justify-center bg-coal-950/70 backdrop-blur-sm fade-in">
-      <div className="panel thin-scroll max-h-[84vh] w-[min(640px,92vw)] overflow-y-auto px-6 py-5">
+      <div className="panel thin-scroll max-h-[88dvh] w-[min(640px,92vw)] overflow-y-auto px-5 py-5 sm:px-6">
         <header className="mb-3 flex items-center justify-between">
           <div>
             <div className="text-[10px] uppercase tracking-hud text-amber-200">Data notes</div>
-            <div className="text-xl font-light">What is measured and what is estimated</div>
+            <div className="text-base font-light leading-snug sm:text-xl">What is measured and what is estimated</div>
           </div>
-          <button type="button" className="icon-btn" aria-label="Close" onClick={close}><X size={15} /></button>
+          <button type="button" className="icon-btn m-hit" aria-label="Close" onClick={close}><X size={15} /></button>
         </header>
 
         <section className="mb-4 text-[13px] leading-relaxed text-mars-100/90">

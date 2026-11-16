@@ -52,7 +52,7 @@ export default function StatusBanner() {
   };
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-14 z-20 flex flex-col items-center gap-1.5 px-4">
+    <div className="gale-status-banner pointer-events-none absolute inset-x-0 top-14 z-20 flex flex-col items-center gap-1.5 px-4">
       {messages.map((m) => (
         <div
           key={m.key}

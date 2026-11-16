@@ -9,6 +9,12 @@
 //
 // `mode` is supplied by the MAP or PLAY route, so refreshes preserve the
 // selected experience. `crater.backHref` returns to the destination selector.
+//
+// The switch is centred over the top bar on desktop. Below 1024px the bar is
+// full, so it moves to its own compact row: under the bar in MAP, and at the
+// top of the screen in PLAY, which has no bar. Destinations / MAP / PLAY is
+// the whole of the application's navigation, and these are the same three
+// links at every size — no second navigation system.
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { defaultCrater } from '@/lib/mars/craters';
@@ -17,15 +23,17 @@ const Explorer = dynamic(() => import('@/components/Explorer'), { ssr: false });
 
 export default function CraterWorkspace({ crater = defaultCrater, mode = 'MAP', play = null }) {
   const routeBase = `/explore/${crater.id}`;
-  return <div className="relative h-screen w-screen overflow-hidden bg-black text-bone">
-    <nav className="absolute left-1/2 top-3 z-[60] flex -translate-x-1/2 items-center gap-1 rounded border border-white/10 bg-black/75 p-1 backdrop-blur-xl">
+  // Clears the map's header on a phone; PLAY has no header to clear.
+  const compactTop = mode === 'MAP' ? 'top-[calc(52px_+_var(--sa-t))]' : 'top-[calc(8px_+_var(--sa-t))]';
+  return <div className="relative h-dvh w-screen overflow-hidden bg-black text-bone">
+    <nav className={`absolute left-[calc(8px_+_var(--sa-l))] ${compactTop} z-[60] flex max-w-[calc(100vw_-_16px)] items-center gap-1 rounded border border-white/10 bg-black/75 p-1 backdrop-blur-xl lg:left-1/2 lg:top-3 lg:max-w-none lg:-translate-x-1/2`}>
       {crater.backHref && (
-        <Link href={crater.backHref} className="px-3 py-2 text-[10px] tracking-[.22em] text-white/45 transition hover:text-white" aria-label={crater.backLabel || 'Back'}>
+        <Link href={crater.backHref} className="px-2.5 py-2 text-[10px] tracking-[.18em] text-white/45 transition hover:text-white lg:px-3 lg:tracking-[.22em]" aria-label={crater.backLabel || 'Back'}>
           {crater.backLabel || '← BACK'}
         </Link>
       )}
-      {['MAP','PLAY'].map((tab) => <Link key={tab} href={`${routeBase}/${tab.toLowerCase()}`} aria-current={mode===tab?'page':undefined} className={`px-5 py-2 text-[10px] tracking-[.28em] transition ${mode===tab?'bg-mars-500/25 text-mars-100':'text-white/45 hover:text-white'}`}>{tab}</Link>)}
+      {['MAP','PLAY'].map((tab) => <Link key={tab} href={`${routeBase}/${tab.toLowerCase()}`} aria-current={mode===tab?'page':undefined} className={`px-3.5 py-2 text-[10px] tracking-[.2em] transition lg:px-5 lg:tracking-[.28em] ${mode===tab?'bg-mars-500/25 text-mars-100':'text-white/45 hover:text-white'}`}>{tab}</Link>)}
     </nav>
-    {mode === 'MAP' ? <Explorer crater={crater} /> : play || <div className="flex h-full items-center justify-center bg-[radial-gradient(ellipse_at_center,#25110b_0%,#080606_55%,#000_100%)]"><div className="max-w-md px-8 text-center"><p className="mb-4 text-[10px] tracking-[.4em] text-mars-300">{crater.playHeading}</p><h1 className="mb-3 text-3xl tracking-wide">PLAY MODE</h1><p className="text-sm leading-7 text-white/55">{crater.playNote}</p><Link className="btn mt-7 inline-block" href={`${routeBase}/map`}>RETURN TO MAP</Link></div></div>}
+    {mode === 'MAP' ? <Explorer crater={crater} /> : play || <div className="flex h-full items-center justify-center bg-[radial-gradient(ellipse_at_center,#25110b_0%,#080606_55%,#000_100%)]"><div className="max-w-md px-6 text-center sm:px-8"><p className="mb-4 text-[10px] tracking-[.4em] text-mars-300">{crater.playHeading}</p><h1 className="mb-3 text-2xl tracking-wide sm:text-3xl">PLAY MODE</h1><p className="text-sm leading-7 text-white/55">{crater.playNote}</p><Link className="btn mt-7 inline-block" href={`${routeBase}/map`}>RETURN TO MAP</Link></div></div>}
   </div>;
 }

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGame } from '@/lib/store';
@@ -17,6 +17,9 @@ import { TraverseLine, RouteLine } from '@/components/world/TraverseLine';
 import Player from './Player';
 import MarsLoadingScreen from '@/components/ui/MarsLoadingScreen';
 import HUD from '@/components/ui/HUD';
+import MobileGameHUD from '@/components/mobile/MobileGameHUD';
+import TouchGameControls from '@/components/mobile/TouchGameControls';
+import { useViewport } from '@/hooks/useViewport';
 import PauseMenu from '@/components/ui/PauseMenu';
 import SettingsPanel from '@/components/ui/SettingsPanel';
 import DataNotice from '@/components/ui/DataNotice';
@@ -38,6 +41,7 @@ export default function Game({ crater = JEZERO_GAME }) {
     { label: 'Mission plan', done: false },
     { label: 'Panorama catalogue', done: false },
   ]);
+  const { compact, touch } = useViewport();
   const ready = useGame((g) => g.ready);
   const quality = useGame((g) => g.settings.quality);
   const activePanoramaId = useGame((g) => g.activePanoramaId);
@@ -104,12 +108,22 @@ export default function Game({ crater = JEZERO_GAME }) {
     };
   }, [crater]);
 
+  // The quality setting still decides the ceiling; a small screen lowers it
+  // further, because a phone's device pixel ratio is often 3. Nothing about
+  // the terrain, its geometry or its data changes — only how many device
+  // pixels the same frame is drawn into.
+  const dpr = useMemo(() => {
+    const device = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    const ceiling = compact ? Math.min(DPR[quality] || 1.5, 1.5) : DPR[quality] || 1.5;
+    return Math.min(device, ceiling);
+  }, [compact, quality]);
+
   return (
-    <div className="relative h-screen w-screen select-none overflow-hidden bg-coal-950">
+    <div className="aroute-game relative h-dvh w-screen select-none overflow-hidden bg-coal-950">
       {assets && (
         <Canvas
           flat
-          dpr={Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1, DPR[quality] || 1.5)}
+          dpr={dpr}
           gl={{ antialias: quality !== 'low', powerPreference: 'high-performance' }}
           camera={{ fov: 68, near: 0.25, far: 220000 }}
           frameloop={activePanoramaId ? 'never' : 'always'}
@@ -131,7 +145,10 @@ export default function Game({ crater = JEZERO_GAME }) {
 
       {ready && assets && (
         <>
-          {started && !allComplete && !activePanoramaId && <HUD />}
+          {started && !allComplete && !activePanoramaId && (compact ? <MobileGameHUD /> : <HUD />)}
+          {/* Movement controls appear only where there is a finger to use
+              them: a narrow desktop window keeps its keyboard and mouse. */}
+          {started && !allComplete && !activePanoramaId && compact && touch && <TouchGameControls />}
           <InfoPopup />
           <MissionComplete />
           <CampaignCard mode={!started ? 'start' : allComplete && completion ? 'finish' : null} />

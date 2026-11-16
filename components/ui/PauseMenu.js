@@ -24,13 +24,13 @@ export default function PauseMenu() {
 
   return (
     <div className="absolute inset-0 z-[35] flex items-center justify-center bg-coal-950/70 backdrop-blur-sm fade-in">
-      <div className="panel flex max-h-[84vh] w-[min(760px,92vw)] flex-col">
-        <header className="flex items-center justify-between border-b border-mars-200/10 px-6 py-4">
+      <div className="panel flex max-h-[88dvh] w-[min(760px,92vw)] flex-col">
+        <header className="flex items-center justify-between gap-3 border-b border-mars-200/10 px-5 py-4 sm:px-6">
           <div>
             <div className="text-[10px] uppercase tracking-hud text-mars-300">
               Paused
             </div>
-            <div className="text-xl font-light">Mission log</div>
+            <div className="text-lg font-light sm:text-xl">Mission log</div>
           </div>
 
           <button type="button" className="btn-primary" onClick={resume}>
@@ -38,7 +38,7 @@ export default function PauseMenu() {
           </button>
         </header>
 
-        <div className="thin-scroll flex-1 overflow-y-auto px-6 py-4">
+        <div className="thin-scroll flex-1 overflow-y-auto px-5 py-4 sm:px-6">
           {MISSIONS.map((m, i) => {
             const locked = i > missionIndex;
             const p = missionProgress(m, done);
@@ -145,7 +145,7 @@ export default function PauseMenu() {
           })}
         </div>
 
-        <footer className="flex flex-wrap items-center gap-2 border-t border-mars-200/10 px-6 py-3">
+        <footer className="flex flex-wrap items-center gap-2 border-t border-mars-200/10 px-5 py-3 sm:px-6">
           <button
             type="button"
             className="btn"

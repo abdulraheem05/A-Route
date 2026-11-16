@@ -68,9 +68,11 @@ function Popover({ title, onClose, children, width = 300 }) {
         aria-label="Close panel"
         tabIndex={-1}
       />
+      {/* Never wider than the screen it is anchored to, which leaves the
+          desktop width untouched and keeps it on a 320px phone. */}
       <div
         className="panel fade-in thin-scroll absolute right-0 top-9 z-50 max-h-[70vh] overflow-y-auto"
-        style={{ width }}
+        style={{ width: `min(${width}px, calc(100vw - 20px))` }}
         role="dialog"
         aria-label={title}
       >

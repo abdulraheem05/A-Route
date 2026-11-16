@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useGame } from '@/lib/store';
+import { touchInput, resetTouchInput } from '@/lib/mobile/touchInput';
 import { WORLD } from '@/lib/scientific-data';
 import { worldToGeo } from '@/lib/coordinates/projection-jezero';
 import { EYE_HEIGHT_M, WALK_SPEED, RUN_SPEED, JUMP_SPEED, MARS_GRAVITY, MAX_WALKABLE_SLOPE_DEG, INTERACT_RADIUS_M } from '@/lib/mars/constants-jezero';
@@ -12,7 +13,7 @@ const D2R = Math.PI / 180;
 export default function Player({ hf }) {
   const { camera, gl } = useThree();
   const keys = useRef({});
-  const st = useRef({ x: 0, z: 6, y: 0, vy: 0, grounded: true, yaw: -300 * D2R, pitch: -0.03, tick: 0, saveTick: 0, blocked: null, blockedUntil: 0, speed: 0 });
+  const st = useRef({ x: 0, z: 300, y: 0, vy: 0, grounded: true, yaw: 0, pitch: -0.03, tick: 0, saveTick: 0, blocked: null, blockedUntil: 0, speed: 0 });
 
   // spawn
   useEffect(() => {
@@ -49,8 +50,8 @@ export default function Player({ hf }) {
       if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
       if (!drag.moved) return;
       const k = 0.0032 * game.getState().settings.sensitivity;
-      st.current.yaw = drag.yaw - dx * k;
-      st.current.pitch = Math.max(-1.5, Math.min(1.5, drag.pitch - dy * k));
+      st.current.yaw = drag.yaw + dx * k;
+      st.current.pitch = Math.max(-1.5, Math.min(1.5, drag.pitch + dy * k));
     }
     function onPointerUp() { if (drag && !drag.moved) interact(); drag = null; }
     function onKeyDown(e) {
@@ -75,7 +76,7 @@ export default function Player({ hf }) {
       }
     }
     function onKeyUp(e) { keys.current[e.code] = false; }
-    function onBlur() { keys.current = {}; }
+    function onBlur() { keys.current = {}; resetTouchInput(); }
 
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
@@ -87,7 +88,7 @@ export default function Player({ hf }) {
     const unsub = game.subscribe((g) => {
       const open = g.overlayOpen() || g.paused;
       if (open && document.pointerLockElement === canvas) document.exitPointerLock();
-      if (open) keys.current = {};
+      if (open) { keys.current = {}; resetTouchInput(); }
     });
     return () => {
       canvas.removeEventListener('pointerdown', onPointerDown);
@@ -119,11 +120,17 @@ export default function Player({ hf }) {
     let moved = 0;
     if (!frozen) {
       const k = keys.current;
-      let f = (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0);
-      let r = (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0);
+      // Keyboard and the on-screen stick feed the same pair. The stick is
+      // analog, so the pair is clamped to the unit disc rather than
+      // normalised: for keys the two are identical (a single key is already
+      // length 1, a diagonal 1.41 is scaled to 1 either way), and a half
+      // push of the stick stays a half-speed walk.
+      let f = (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0) + touchInput.forward;
+      let r = (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0) + touchInput.right;
       if (f || r) {
-        const len = Math.hypot(f, r); f /= len; r /= len;
-        const running = k.ShiftLeft || k.ShiftRight;
+        const len = Math.hypot(f, r);
+        if (len > 1) { f /= len; r /= len; }
+        const running = k.ShiftLeft || k.ShiftRight || touchInput.run;
         const speed = (running ? RUN_SPEED : WALK_SPEED) * g.settings.pace;
         const sin = Math.sin(s.yaw), cos = Math.cos(s.yaw);
         // camera forward = (-sin, -cos), right = (cos, -sin) in (x, z)

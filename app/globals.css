@@ -1388,3 +1388,725 @@
 @keyframes jezeroMapIn {from{opacity:0;transform:scale(.12);border-radius:50%}to{opacity:1;transform:none;border-radius:0}}
 @keyframes jezeroMapOut {from{opacity:1;transform:none}to{opacity:0;transform:scale(.12)}}
 @media(prefers-reduced-motion:reduce){.jezero-workspace .fade-in,.jezero-workspace .rise-in,.jezero-workspace .map-in,.jezero-workspace .map-out{animation:none}}
+
+
+/* ===========================================================================
+   MOBILE & TABLET
+   ---------------------------------------------------------------------------
+   Everything below is additive. The desktop workspace (1024px and above) is
+   not reached by any rule here: the layout rules are either inside a
+   max-width media query or scoped to [data-mobile='true'], which only the
+   mobile shells set. Colours, type scale and iconography are the existing
+   A-ROUTE ones — the --g-* tokens for MAP, the mars/coal/ice ramp for PLAY.
+   =========================================================================== */
+
+:root {
+  /* Resolved once here so panels can mix them into calc() without repeating
+     the env() fallback chain. Zero on every device without insets. */
+  --sa-t: env(safe-area-inset-top, 0px);
+  --sa-b: env(safe-area-inset-bottom, 0px);
+  --sa-l: env(safe-area-inset-left, 0px);
+  --sa-r: env(safe-area-inset-right, 0px);
+
+  /* Minimum comfortable touch target. */
+  --touch: 44px;
+}
+
+/* The 3D views own their gestures: without this the browser claims vertical
+   drags for page scrolling and the terrain cannot be panned or looked around
+   with one finger. Scoped to the two interactive scenes, so the cinematic
+   intro and the destination list keep scrolling normally. */
+.gale-workspace canvas,
+.aroute-game canvas {
+  touch-action: none;
+}
+
+/* Mobile browser toolbars: 100dvh is the visible height, so nothing is left
+   under the address bar. Identical to 100vh on desktop, but kept inside the
+   query so desktop CSS is provably unchanged. */
+@media (max-width: 1023px) {
+  .gale-workspace,
+  .aroute-game {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+  /* No horizontal overflow anywhere on a phone. */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* --- shared mobile surfaces ------------------------------------------------ */
+@layer components {
+  /* The map's interface layer sets pointer-events:none so the terrain keeps
+     the whole screen; every mobile surface that takes input opts back in. */
+  .m-fab-stack,
+  .m-sheet,
+  .m-sheet-backdrop,
+  .m-tabbar,
+  .m-status {
+    pointer-events: auto;
+  }
+
+  /* Round floating control, sized for a thumb. */
+  .m-fab {
+    display: inline-flex;
+    height: var(--touch);
+    width: var(--touch);
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid var(--g-line, rgba(148, 163, 184, 0.14));
+    background: rgba(9, 11, 15, 0.82);
+    color: var(--g-text, #e8edf4);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+  }
+
+  .m-fab:active {
+    background: rgba(232, 136, 74, 0.2);
+    border-color: rgba(232, 136, 74, 0.5);
+  }
+
+  .m-fab[data-on='true'] {
+    border-color: rgba(232, 136, 74, 0.45);
+    background: rgba(232, 136, 74, 0.18);
+    color: var(--g-accent, #e8884a);
+  }
+
+  .m-fab:disabled {
+    opacity: 0.35;
+  }
+
+  /* Vertical stack of floating controls, inset from the right edge. */
+  .m-fab-stack {
+    position: absolute;
+    right: calc(10px + var(--sa-r));
+    z-index: 34;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* --- bottom sheet ------------------------------------------------------- */
+  .m-sheet-backdrop {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: calc(54px + var(--sa-b));
+    z-index: 44;
+    background: rgba(0, 0, 0, 0.45);
+    animation: m-fade 180ms ease-out both;
+  }
+
+  /* Sits above the tab bar rather than over it, so the panel switcher stays
+     usable while a sheet is open. */
+  .m-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(54px + var(--sa-b));
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-top: 1px solid var(--g-line, rgba(148, 163, 184, 0.14));
+    background: rgba(9, 11, 15, 0.97);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.6);
+    animation: m-sheet-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition: height 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    /* Vertical drags on the grip are the sheet's own gesture. */
+    touch-action: pan-y;
+    will-change: height;
+  }
+
+  .m-sheet[data-dragging='true'] {
+    transition: none;
+  }
+
+  @keyframes m-sheet-in {
+    from { transform: translateY(14%); opacity: 0.4; }
+    to { transform: none; opacity: 1; }
+  }
+
+  @keyframes m-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* The grab area: a generous invisible band around a small visible bar. */
+  .m-sheet-grip {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    height: 26px;
+    width: 100%;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .m-sheet-grip::after {
+    content: '';
+    height: 4px;
+    width: 42px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  .m-sheet-head {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 8px;
+  }
+
+  .m-sheet-title {
+    flex: 1 1 auto;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--g-text, #e8edf4);
+  }
+
+  .m-sheet-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* --- bottom tab bar ----------------------------------------------------- */
+  /* Above the sheet and its backdrop: switching panel is always one tap. */
+  .m-tabbar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 46;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    border-top: 1px solid var(--g-line, rgba(148, 163, 184, 0.14));
+    background: rgba(6, 7, 10, 0.95);
+    backdrop-filter: blur(16px);
+    padding-bottom: var(--sa-b);
+  }
+
+  .m-tab {
+    display: flex;
+    height: 54px;
+    min-height: var(--touch);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 2px;
+    color: var(--g-text-faint, #6b7686);
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.14s ease, background 0.14s ease;
+  }
+
+  .m-tab[data-on='true'] {
+    color: var(--g-accent, #e8884a);
+    background: rgba(232, 136, 74, 0.1);
+  }
+
+  .m-tab-label {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+}
+
+/* --- MAP: the mobile shell ------------------------------------------------ */
+/* Scoped to the attribute the mobile shell sets, so a desktop window that
+   merely happens to be narrow is never half-converted. */
+.gale-workspace[data-mobile='true'] {
+  --g-top: 46px;
+  --g-foot: 0px;
+  --g-gap: 10px;
+}
+
+/* The docked panels are rendered inside sheets on mobile. Their own
+   positioning, width, frame and shadow are neutralised so the sheet provides
+   them; every control, group and value inside is untouched. */
+.m-sheet-body .gale-dock {
+  position: static;
+  inset: auto;
+  width: 100%;
+  height: auto;
+  z-index: auto;
+  gap: 0;
+  pointer-events: auto;
+}
+
+.m-sheet-body .gale-dock.panel,
+.m-sheet-body .gale-dock .panel {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* Inside a sheet the inspector's sections stack as a list rather than as four
+   floating cards, and only the open one grows. */
+.m-sheet-body .acc + .acc {
+  border-top: 1px solid var(--g-line-soft, rgba(148, 163, 184, 0.09));
+}
+
+.m-sheet-body .acc[data-open='true'] {
+  flex: 0 0 auto;
+}
+
+.m-sheet-body .acc-body {
+  overflow: visible;
+}
+
+/* The layer tree scrolls with the sheet instead of inside itself, so the
+   sheet's own height is the only scroller on screen. */
+.m-sheet-body .layer-panel > .thin-scroll {
+  overflow: visible;
+}
+
+/* Comfortable rows: the same tree, with touch-sized hit areas. */
+.m-sheet-body .layer-row,
+.m-sheet-body .layer-group-head {
+  min-height: 40px;
+}
+
+.m-sheet-body .layer-eye {
+  height: 32px;
+  width: 32px;
+}
+
+.m-sheet-body .gale-icon-btn {
+  height: 34px;
+  width: 34px;
+}
+
+/* Hover tooltips have no meaning on a touch screen and would be left showing
+   after a tap. Labels and aria-labels carry the same information. */
+.m-sheet-body .tip::after,
+[data-mobile='true'] .tip::after {
+  display: none;
+}
+
+/* Everything that lives above the tab bar shares one column: the status
+   panel at the bottom, then the route legend, the picking prompt and any
+   degraded-data notice stacked above it. Laid out by flexbox rather than by
+   hard-coded offsets, so adding or removing one cannot overlap another, and
+   capped so the column can never grow into the floating controls. */
+.m-bottom-stack {
+  position: absolute;
+  left: calc(10px + var(--sa-l));
+  right: calc(10px + var(--sa-r));
+  bottom: calc(54px + 8px + var(--sa-b));
+  z-index: 36;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: 8px;
+  max-height: 38dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: none;
+}
+
+.m-bottom-stack > * {
+  flex: 0 0 auto;
+}
+
+/* Compact status panel, the bottom item of that column. */
+.m-status {
+  pointer-events: auto;
+  border-radius: 10px;
+  border: 1px solid var(--g-line, rgba(148, 163, 184, 0.14));
+  background: rgba(9, 11, 15, 0.86);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
+}
+
+.m-status-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The full readout and the sol timeline, revealed from the status panel.
+   Their own borders are dropped: the status panel is the frame. */
+.m-status-detail > .gale-footer {
+  position: static;
+  border-top: 1px solid var(--g-line-soft, rgba(148, 163, 184, 0.09));
+  background: transparent;
+  backdrop-filter: none;
+}
+
+/* The pointer readout is a hover reading, so on touch it reads as the last
+   tapped point; it wraps instead of overflowing. */
+.m-status-detail .gale-footer > div:first-child {
+  gap: 6px 14px;
+  padding: 8px 10px;
+}
+
+.m-status-detail .sol-timeline {
+  padding: 4px 8px 8px;
+  gap: 8px;
+}
+
+.m-status-detail .sol-timeline .gale-icon-btn {
+  height: 34px;
+  width: 34px;
+}
+
+/* A taller slider thumb is easier to catch with a finger. */
+@media (max-width: 1023px) {
+  .gale-workspace input[type='range']::-webkit-slider-thumb {
+    height: 18px;
+    width: 18px;
+    margin-top: -7.5px;
+  }
+
+  .gale-workspace input[type='range']::-moz-range-thumb {
+    height: 18px;
+    width: 18px;
+  }
+
+  .gale-workspace input[type='range'] {
+    height: 26px;
+  }
+}
+
+/* --- PLAY: mobile HUD and controls --------------------------------------- */
+.aroute-game {
+  --m-stick: 124px;
+}
+
+@media (max-width: 420px) {
+  .aroute-game {
+    --m-stick: 108px;
+  }
+}
+
+/* Thumbstick base. Sits in the lower-left corner, clear of the action
+   buttons on the right. */
+.m-stick {
+  position: absolute;
+  left: calc(16px + var(--sa-l));
+  bottom: calc(18px + var(--sa-b));
+  z-index: 30;
+  height: var(--m-stick);
+  width: var(--m-stick);
+  border-radius: 999px;
+  border: 1px solid rgba(220, 181, 141, 0.28);
+  background: radial-gradient(circle at 50% 50%, rgba(27, 25, 23, 0.52) 0%, rgba(27, 25, 23, 0.3) 70%, rgba(27, 25, 23, 0.12) 100%);
+  backdrop-filter: blur(6px);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.m-stick[data-active='true'] {
+  border-color: rgba(232, 136, 74, 0.6);
+}
+
+/* Faint cross so the rest position is readable at a glance. */
+.m-stick::before,
+.m-stick::after {
+  content: '';
+  position: absolute;
+  background: rgba(246, 234, 217, 0.14);
+}
+
+.m-stick::before {
+  left: 50%;
+  top: 22%;
+  bottom: 22%;
+  width: 1px;
+  transform: translateX(-0.5px);
+}
+
+.m-stick::after {
+  top: 50%;
+  left: 22%;
+  right: 22%;
+  height: 1px;
+  transform: translateY(-0.5px);
+}
+
+.m-stick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 46%;
+  width: 46%;
+  border-radius: 999px;
+  border: 1px solid rgba(236, 214, 184, 0.5);
+  background: rgba(27, 25, 23, 0.82);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.m-stick[data-active='true'] .m-stick-knob {
+  border-color: #c8743f;
+  background: rgba(184, 90, 43, 0.6);
+}
+
+/* Round game action button, in the PLAY palette. */
+.m-action {
+  display: inline-flex;
+  height: 54px;
+  width: 54px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(220, 181, 141, 0.3);
+  background: rgba(27, 25, 23, 0.74);
+  color: #f6ead9;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.m-action:active,
+.m-action[data-on='true'] {
+  border-color: #c8743f;
+  background: rgba(184, 90, 43, 0.56);
+  color: #fff;
+}
+
+.m-action-sm {
+  height: 44px;
+  width: 44px;
+}
+
+.m-action-primary {
+  height: 64px;
+  width: 64px;
+  border-color: rgba(232, 136, 74, 0.6);
+  background: rgba(184, 90, 43, 0.5);
+}
+
+/* Game HUD chip: the compact form of a card that is a panel on desktop. */
+.m-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  border-radius: 999px;
+  border: 1px solid rgba(220, 181, 141, 0.22);
+  background: rgba(17, 15, 14, 0.76);
+  backdrop-filter: blur(10px);
+  padding: 6px 11px;
+  color: #f6ead9;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.m-card {
+  border-radius: 12px;
+  border: 1px solid rgba(220, 181, 141, 0.2);
+  background: rgba(17, 15, 14, 0.9);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+}
+
+/* The PLAY interface's own label/value pair, which the desktop HUD styles
+   through .jezero-workspace. Defined here for the mobile HUD so it does not
+   depend on a scope the game root does not set. */
+.m-hud-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(220, 181, 141, 0.7);
+}
+
+.m-hud-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #f6ead9;
+}
+
+/* Prompt row for the first-person experience: above the movement controls,
+   which are 118px tall and sit 18px from the bottom. Declared before the
+   short-screen override below, which has the same specificity and must win. */
+.m-game-prompts {
+  bottom: calc(150px + var(--sa-b));
+}
+
+/* Landscape phones are short: the stick and buttons shrink so the mission
+   chip and the terrain still have room. */
+@media (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
+  .aroute-game {
+    --m-stick: 96px;
+  }
+
+  .m-action {
+    height: 46px;
+    width: 46px;
+  }
+
+  .m-action-primary {
+    height: 54px;
+    width: 54px;
+  }
+
+  .m-stick {
+    bottom: calc(10px + var(--sa-b));
+  }
+
+  /* The action buttons are shorter here, so the prompts follow them down. */
+  .m-game-prompts {
+    bottom: calc(136px + var(--sa-b));
+  }
+}
+
+/* The floating controls are anchored below the header and must never reach
+   the bottom stack, whatever is in it. Their column is therefore bounded, and
+   wraps into further columns towards the middle of the screen rather than
+   running off the top. The budget is the screen minus the header rows (92px),
+   the tab bar (54px), the bottom stack's own ceiling (38dvh) and a gap:
+   62dvh - 154px. It holds at 320x640 and at 932x430 alike. */
+@media (max-width: 1023px) {
+  .m-fab-stack {
+    flex-wrap: wrap-reverse;
+    gap: 6px;
+    max-height: calc(62dvh - 154px - var(--sa-t) - var(--sa-b));
+  }
+}
+
+/* --- MAP: top area on mobile --------------------------------------------- */
+/* The header draws into the notch and pads itself back out. */
+.gale-workspace[data-mobile='true'] .gale-topbar {
+  height: calc(var(--g-top) + var(--sa-t));
+  padding-top: var(--sa-t);
+  padding-left: calc(8px + var(--sa-l));
+  padding-right: calc(8px + var(--sa-r));
+}
+
+/* The centre of the bar is reserved for the MAP / PLAY switch on desktop.
+   On mobile that switch sits on its own row below the bar, so the spacer
+   stops forcing the bar wider than the screen. */
+.gale-workspace[data-mobile='true'] .gale-topbar-centre {
+  min-width: 0;
+}
+
+/* Both of these are placed by .m-bottom-stack on mobile, so their own
+   absolute offsets are dropped. */
+.gale-workspace[data-mobile='true'] .gale-status-banner {
+  position: static;
+  top: auto;
+  padding: 0;
+}
+
+.gale-workspace[data-mobile='true'] .plan-legend {
+  position: static;
+  max-width: none;
+  overflow-x: auto;
+  justify-content: flex-start;
+}
+
+/* Enlarges a small icon button's hit area on touch screens without moving or
+   restyling it: the padding grows the box, the negative margin puts the icon
+   back where it was. Desktop is untouched. */
+@media (max-width: 1023px) {
+  .m-hit {
+    padding: 10px;
+    margin: -10px;
+  }
+}
+
+/* Loading screens: keep the content out of the notch, and give the planet
+   less of a short screen so the stage list still fits under it. */
+@media (max-width: 1023px) {
+  .mars-load {
+    padding: calc(24px + var(--sa-t)) calc(20px + var(--sa-r)) calc(24px + var(--sa-b)) calc(20px + var(--sa-l));
+  }
+
+  .mars-load-stage {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 22px;
+  }
+}
+
+@media (max-width: 1023px) and (max-height: 560px) {
+  .mars-load-stage {
+    width: 68px;
+    height: 68px;
+    margin-bottom: 14px;
+  }
+}
+
+/* Destination selector and the cinematic intro: the only chrome they have is
+   at the edges, so they need the insets too. */
+@media (max-width: 1023px) {
+  .aroute-safe-page {
+    padding-left: var(--sa-l);
+    padding-right: var(--sa-r);
+    padding-top: var(--sa-t);
+    padding-bottom: var(--sa-b);
+  }
+}
+
+/* The layer tree's own scroll container is sized by its content inside a
+   sheet; the sheet is the only scroller. */
+.m-sheet-body .gale-dock > .thin-scroll {
+  flex: 0 0 auto;
+}
+
+/* The minimap keeps its own drawing and its full-map tap target; only its
+   drawn size changes, so a phone screen is not a third minimap. A short
+   landscape screen shrinks it further to stay clear of the prompts above the
+   movement controls. */
+.m-minimap {
+  transform: scale(0.68);
+  transform-origin: top right;
+}
+
+@media (max-width: 1023px) and (max-height: 540px) {
+  .m-minimap {
+    transform: scale(0.46);
+  }
+
+  /* A short landscape screen has no room for both a tall bottom stack and a
+     floating control, so the stack's ceiling drops and the controls take the
+     space that frees up: 100dvh - 92px header - 8px gap - 28dvh - 54px tab
+     bar, which is 72dvh - 154px. */
+  .m-bottom-stack {
+    max-height: 28dvh;
+  }
+
+  .m-fab-stack {
+    max-height: calc(72dvh - 154px - var(--sa-t) - var(--sa-b));
+  }
+}
+
+/* Shortest landscape phones: the minimap gives up more of its drawn size
+   rather than reaching the prompts above the movement controls. */
+@media (max-width: 1023px) and (max-height: 400px) {
+  .m-minimap {
+    transform: scale(0.36);
+  }
+}

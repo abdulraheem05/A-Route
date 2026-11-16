@@ -3,12 +3,12 @@ import { X } from 'lucide-react';
 import { useGame } from '@/lib/store';
 
 const Row = ({ label, hint, children }) => (
-  <div className="flex items-center justify-between gap-6 border-b border-mars-200/10 py-3 last:border-0">
+  <div className="flex flex-col items-stretch gap-2 border-b border-mars-200/10 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
     <div>
       <div className="text-sm text-mars-50">{label}</div>
       {hint && <div className="max-w-xs text-[11px] leading-snug text-mars-200/60">{hint}</div>}
     </div>
-    <div className="shrink-0">{children}</div>
+    <div className="shrink-0 sm:ml-auto">{children}</div>
   </div>
 );
 
@@ -30,10 +30,10 @@ export default function SettingsPanel() {
   const close = useGame((g) => g.closeSettings);
   return (
     <div className="absolute inset-0 z-[36] flex items-center justify-center bg-coal-950/70 backdrop-blur-sm fade-in">
-      <div className="panel w-[min(560px,92vw)] px-6 py-4">
+      <div className="panel thin-scroll max-h-[88dvh] w-[min(560px,92vw)] overflow-y-auto px-5 py-4 sm:px-6">
         <header className="mb-1 flex items-center justify-between">
           <div className="text-xl font-light">Settings</div>
-          <button type="button" className="icon-btn" aria-label="Close settings" onClick={close}><X size={15} /></button>
+          <button type="button" className="icon-btn m-hit" aria-label="Close settings" onClick={close}><X size={15} /></button>
         </header>
         <Row label="Graphics quality" hint="Terrain mesh density and render resolution. Medium suits most desktop GPUs.">
           <Segmented value={s.quality} onChange={(quality) => update({ quality })} options={[{ value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }]} />
@@ -42,10 +42,10 @@ export default function SettingsPanel() {
           <Segmented value={s.pace} onChange={(pace) => update({ pace })} options={[{ value: 1, label: '×1' }, { value: 5, label: '×5' }, { value: 10, label: '×10' }, { value: 40, label: '×40' }]} />
         </Row>
         <Row label="Mouse sensitivity">
-          <input type="range" min="0.3" max="2.5" step="0.1" value={s.sensitivity} onChange={(e) => update({ sensitivity: +e.target.value })} className="w-44 accent-mars-400" aria-label="Mouse sensitivity" />
+          <input type="range" min="0.3" max="2.5" step="0.1" value={s.sensitivity} onChange={(e) => update({ sensitivity: +e.target.value })} className="w-full accent-mars-400 sm:w-44" aria-label="Mouse sensitivity" />
         </Row>
         <Row label="Field of view" hint={`${s.fov}°`}>
-          <input type="range" min="50" max="95" step="1" value={s.fov} onChange={(e) => update({ fov: +e.target.value })} className="w-44 accent-mars-400" aria-label="Field of view" />
+          <input type="range" min="50" max="95" step="1" value={s.fov} onChange={(e) => update({ fov: +e.target.value })} className="w-full accent-mars-400 sm:w-44" aria-label="Field of view" />
         </Row>
         <Row label="Rover traverse line">
           <Segmented value={s.showTraverse} onChange={(showTraverse) => update({ showTraverse })} options={[{ value: true, label: 'Show' }, { value: false, label: 'Hide' }]} />

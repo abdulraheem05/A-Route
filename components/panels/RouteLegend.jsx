@@ -2,10 +2,15 @@
 // Legend for the planned routes, over the map and only while routes exist.
 // Clicking an entry makes that route the active one; the checkbox in the panel
 // controls whether it is drawn at all.
+import { useCompact } from '@/hooks/useViewport';
 import { END_COLOR, ROUTE_MODES, START_COLOR } from '@/lib/terrain/routing';
 import { useStore } from '@/store/useStore';
 
 export default function RouteLegend() {
+  // On a phone the legend is one item in the shell's bottom stack, which
+  // positions it; its own offsets would fight that, so they are dropped.
+  // Desktop keeps the original placement exactly.
+  const compact = useCompact();
   const result = useStore((s) => s.plan.result);
   const show = useStore((s) => s.plan.show);
   const active = useStore((s) => s.plan.active);
@@ -20,11 +25,15 @@ export default function RouteLegend() {
   return (
     <div
       className="plan-legend fade-in pointer-events-auto absolute z-30"
-      style={{
-        bottom: 'calc(var(--g-foot) + var(--g-gap))',
-        left: sidebarOpen ? 'calc(var(--g-left-w) + var(--g-gap) * 2)' : 'calc(var(--g-gap) * 2)',
-        transition: 'left 220ms ease',
-      }}
+      style={
+        compact
+          ? undefined
+          : {
+              bottom: 'calc(var(--g-foot) + var(--g-gap))',
+              left: sidebarOpen ? 'calc(var(--g-left-w) + var(--g-gap) * 2)' : 'calc(var(--g-gap) * 2)',
+              transition: 'left 220ms ease',
+            }
+      }
       aria-label="Route legend"
     >
       {start && (

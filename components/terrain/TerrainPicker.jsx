@@ -62,13 +62,17 @@ export default function TerrainPicker() {
       useStore.setState({ cursor: null });
     };
     const onDown = (e) => {
-      down.current = { x: e.clientX, y: e.clientY, button: e.button };
+      down.current = { x: e.clientX, y: e.clientY, button: e.button, touch: e.pointerType === 'touch' };
     };
     const onUp = (e) => {
       const d = down.current;
       down.current = null;
       if (!d || d.button !== 0) return;
-      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 5) return; // it was a drag
+      // A fingertip wanders a few pixels on a deliberate tap, so touch gets a
+      // wider tolerance before the gesture counts as a pan. A mouse keeps the
+      // original 5px.
+      const slop = d.touch ? 12 : 5;
+      if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > slop) return; // it was a drag
       const [x, y] = toNdc(e);
       const p = pickAt(x, y);
       if (!p) return;

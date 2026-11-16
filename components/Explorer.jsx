@@ -11,6 +11,11 @@
 //
 // Measurement and route planning are one section of the inspector,
 // MEASURE & PLAN; the legend below the map names what is drawn.
+//
+// Below 1024px the docks no longer fit beside the terrain, so the same
+// panels are rendered by MobileMapShell as bottom sheets instead. The
+// desktop branch below is unchanged, and the data hooks, the crater
+// provider, the loading gate and the viewport are shared by both.
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { CraterProvider, useCrater } from '@/lib/mars/CraterContext';
@@ -18,7 +23,9 @@ import { defaultCrater } from '@/lib/mars/craters';
 import { useTerrainData } from '@/hooks/useTerrainData';
 import { useRoverData } from '@/hooks/useRoverData';
 import { useWeather } from '@/hooks/useWeather';
+import { useViewport } from '@/hooks/useViewport';
 import { useStore } from '@/store/useStore';
+import MobileMapShell from '@/components/mobile/MobileMapShell';
 import TopBar from '@/components/panels/TopBar';
 import LayerSidebar from '@/components/panels/LayerSidebar';
 import InfoPanel from '@/components/panels/InfoPanel';
@@ -60,6 +67,7 @@ export default function Explorer({ crater = defaultCrater }) {
 
 function ExplorerShell() {
   const crater = useCrater();
+  const { compact } = useViewport();
   useTerrainData();
   useRoverData();
   useWeather();
@@ -79,7 +87,10 @@ function ExplorerShell() {
   }, [crater]);
 
   return (
-    <main className="gale-workspace relative h-screen w-screen overflow-hidden text-slate-200">
+    <main
+      className="gale-workspace relative h-screen w-screen overflow-hidden text-slate-200"
+      data-mobile={compact ? 'true' : 'false'}
+    >
       <div className="absolute inset-0">
         <Viewport />
       </div>
@@ -87,17 +98,23 @@ function ExplorerShell() {
       {/* Interface layer: only the panels themselves take pointer input, so the
           terrain keeps the whole screen for navigation. */}
       <div className="pointer-events-none absolute inset-0 z-20">
-        <TopBar />
-        <StatusBanner />
-        <LayerSidebar />
-        <InfoPanel />
-        <NavControls />
-        <RouteLegend />
-        <footer className="gale-footer pointer-events-auto absolute inset-x-0 bottom-0 z-30">
-          <Readout />
-          <SolTimeline />
-        </footer>
-        <DatasetInfo />
+        {compact ? (
+          <MobileMapShell />
+        ) : (
+          <>
+            <TopBar />
+            <StatusBanner />
+            <LayerSidebar />
+            <InfoPanel />
+            <NavControls />
+            <RouteLegend />
+            <footer className="gale-footer pointer-events-auto absolute inset-x-0 bottom-0 z-30">
+              <Readout />
+              <SolTimeline />
+            </footer>
+            <DatasetInfo />
+          </>
+        )}
       </div>
     </main>
   );

@@ -61,18 +61,18 @@ export default function InfoPopup() {
 
   return (
     <div
-      className="fixed inset-0 z-30 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm panorama-popup-enter"
+      className="panorama-popup-enter fixed inset-0 z-30 flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm lg:p-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) {
           useGame.getState().closeSite();
         }
       }}
     >
-      <section className="relative w-full max-w-5xl overflow-hidden rounded-xl border border-mars-300/25 bg-[#211810]/95 shadow-2xl">
+      <section className="thin-scroll relative max-h-[92dvh] w-full max-w-5xl overflow-y-auto rounded-xl border border-mars-300/25 bg-[#211810]/95 shadow-2xl lg:overflow-hidden">
 
         {/* Close button */}
         <button
-          className="icon-btn absolute right-4 top-4 z-10"
+          className="icon-btn m-hit absolute right-4 top-4 z-10"
           aria-label="Close"
           onClick={() => useGame.getState().closeSite()}
         >
@@ -80,7 +80,7 @@ export default function InfoPopup() {
         </button>
 
         {/* Popup header */}
-        <header className="border-b border-mars-200/15 px-7 py-5 pr-16">
+        <header className="border-b border-mars-200/15 px-5 py-4 pr-14 lg:px-7 lg:py-5 lg:pr-16">
           <div className="text-xs uppercase tracking-[.2em] text-mars-300">
             MISSION{' '}
             {String(
@@ -90,33 +90,33 @@ export default function InfoPopup() {
             {site.name}
           </div>
 
-          <h2 className="mt-2 text-3xl font-light text-mars-50">
+          <h2 className="mt-2 text-xl font-light leading-snug text-mars-50 lg:text-3xl">
             {item.name || site.name}
           </h2>
         </header>
 
         {/* Locked location */}
         {!unlocked ? (
-          <div className="p-10 text-center text-xl">
+          <div className="p-6 text-center text-base lg:p-10 lg:text-xl">
             Complete the previous mission to access this location.
           </div>
 
         /* Panorama popup */
         ) : item.kind === 'panorama' ? (
-          <div className="p-8 text-center">
-            <p className="mx-auto mb-8 max-w-3xl text-2xl leading-relaxed text-mars-50">
+          <div className="p-5 text-center lg:p-8">
+            <p className="mx-auto mb-6 max-w-3xl text-base leading-relaxed text-mars-50 lg:mb-8 lg:text-2xl">
               {overview}
             </p>
 
             <button
-              className="mx-auto flex min-w-72 items-center justify-center gap-3 rounded-full border border-white/10 bg-black/40 px-6 py-4 text-lg text-white transition hover:bg-black/60"
+              className="mx-auto flex w-full max-w-xs items-center justify-center gap-3 rounded-full border border-white/10 bg-black/40 px-5 py-3.5 text-base text-white transition hover:bg-black/60 lg:min-w-72 lg:max-w-none lg:px-6 lg:py-4 lg:text-lg"
               onClick={() => {
                 if (pano?.id) {
                   useGame.getState().openPanorama(pano.id);
                 }
               }}
             >
-              <Camera size={28} className="shrink-0" />
+              <Camera size={22} className="shrink-0" />
               <span>View panorama</span>
             </button>
           </div>

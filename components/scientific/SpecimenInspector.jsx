@@ -41,7 +41,7 @@ function Row({ label, children }) {
   return (
     <div className="mt-5 first:mt-0">
       <div className="text-[11px] uppercase tracking-[.22em] text-mars-300">{label}</div>
-      <p className="mt-1.5 text-lg leading-relaxed text-mars-50">{children}</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-mars-50 md:text-lg">{children}</p>
     </div>
   );
 }
@@ -69,9 +69,9 @@ export default function SpecimenInspector({ item, obj, image, imageAlt, kindLabe
   }, [stage, item.id, onDone]);
 
   return (
-    <div className="grid min-h-[420px] md:grid-cols-2">
+    <div className="grid md:min-h-[420px] md:grid-cols-2">
       {/* ------------------------------------------------- the specimen */}
-      <div className="relative flex min-h-[320px] items-center justify-center overflow-hidden bg-black/35 p-6">
+      <div className="relative flex min-h-[200px] items-center justify-center overflow-hidden bg-black/35 p-4 md:min-h-[320px] md:p-6">
         {image ? (
           <figure className="relative w-full">
             <img
@@ -110,16 +110,16 @@ export default function SpecimenInspector({ item, obj, image, imageAlt, kindLabe
       </div>
 
       {/* --------------------------------------------------- the reading */}
-      <div className="flex flex-col justify-center p-8 md:p-10">
+      <div className="flex flex-col justify-center p-5 md:p-8 lg:p-10">
         {stage !== 'done' ? (
           <>
-            <p className="mb-7 text-2xl leading-relaxed text-mars-50">
+            <p className="mb-6 text-base leading-relaxed text-mars-50 md:mb-7 md:text-2xl">
               {obj.summary || obj.description || item.name}
             </p>
-            {analysis.context && <p className="mb-7 text-lg leading-relaxed text-mars-100/75">{analysis.context}</p>}
+            {analysis.context && <p className="mb-6 text-sm leading-relaxed text-mars-100/75 md:mb-7 md:text-lg">{analysis.context}</p>}
             <button
               type="button"
-              className="group flex w-full max-w-xs items-center justify-center gap-3 rounded-full border border-mars-300/40 bg-mars-500/15 px-6 py-4 text-lg text-mars-50 transition hover:bg-mars-500/25 disabled:opacity-60"
+              className="group flex w-full max-w-xs items-center justify-center gap-3 rounded-full border border-mars-300/40 bg-mars-500/15 px-5 py-3.5 text-base text-mars-50 transition hover:bg-mars-500/25 disabled:opacity-60 md:px-6 md:py-4 md:text-lg"
               onClick={startScan}
               disabled={stage === 'scanning'}
             >
@@ -136,7 +136,7 @@ export default function SpecimenInspector({ item, obj, image, imageAlt, kindLabe
               <Check size={14} />
               {kindLabel === 'drill site' ? 'Drill sample analysis complete' : 'Rock analysis complete'}
             </div>
-            <h3 className="mt-2 text-2xl font-light text-mars-50">{item.name}</h3>
+            <h3 className="mt-2 text-lg font-light leading-snug text-mars-50 md:text-2xl">{item.name}</h3>
             {analysis.instrument && <p className="mt-1 text-sm text-mars-200/60">{analysis.instrument}</p>}
 
             <div className="mt-6">
@@ -152,7 +152,7 @@ export default function SpecimenInspector({ item, obj, image, imageAlt, kindLabe
 
             <button
               type="button"
-              className="mt-8 w-full max-w-xs rounded-full border border-white/10 bg-black/40 px-6 py-3 text-lg text-white transition hover:bg-black/60"
+              className="mt-7 w-full max-w-xs rounded-full border border-white/10 bg-black/40 px-5 py-3 text-base text-white transition hover:bg-black/60 md:mt-8 md:px-6 md:text-lg"
               onClick={() => useGame.getState().closeSite()}
             >
               Continue
