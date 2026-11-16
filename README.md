@@ -43,7 +43,7 @@ Source references and dataset notes are maintained in [`data/sources.json`](data
 - [NASA Mars Trek](https://trek.nasa.gov/mars/) — orbital imagery and map layers
 - [Geologic Map of Mars](https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/PERSEVERANCE/meda.html) — planetary elevation and topographic products
 - [Mars Weather data](https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/PERSEVERANCE/meda.html) - weather observations
-- [Perseverance panorama images](https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/PERSEVERANCE/meda.html) — Perseverance panorama and rover imagery
+- [Perseverance panorama images](https://mastcamz.asu.edu/mars-images/panoramas-mosaics/?item_type=360-panoramas&pg=1) — Perseverance panorama and rover imagery
 - [Curiosity panorama images](https://mars.nasa.gov/msl/multimedia/raw-images/?order=sol+desc%2Cinstrument_sort+asc%2Csample_type_sort+asc%2C+date_taken+desc&per_page=50&page=0&mission=msl) — Curiosity panorama and rover imagery
 - [Gale Crater Stereo CTX DTM](https://figshare.com/articles/dataset/Gale_Crater_Stereo_CTX_DTMs_Orthoimages/6584984?file=12096848) — 1 m/pixel DEM combining HRSC, CTX and HiRISE data
 - [Jezero Crater Stereo CTX DTM](https://astrogeology.usgs.gov/search/map/mars_2020_science_investigation_ctx_dem_mosaic?utm_source=chatgpt.com) - 20 m/pixel CTX stereo DEM
