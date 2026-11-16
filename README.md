@@ -1,6 +1,26 @@
-# A-ROUTE — Mars Terrain Exploration
+<div align="center">
+
+<img src="./public/screenshots/A-ROUTE logo.png" alt="A-ROUTE Logo" width="450" align="center">
+
+[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-Frontend-61DAFB.svg)](https://react.dev/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-F7DF1E.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Three.js](https://img.shields.io/badge/Three.js-3D_Environment-000000.svg)](https://threejs.org/)
+[![React Three Fiber](https://img.shields.io/badge/React_Three_Fiber-3D_Rendering-CA1F7B.svg)](https://r3f.docs.pmnd.rs/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-Styling-06B6D4.svg)](https://tailwindcss.com/)
+[![NASA](https://img.shields.io/badge/NASA-Space_Data-E03C31.svg)](https://www.nasa.gov/)
+[![Mars Exploration](https://img.shields.io/badge/Mars-Exploration-B55239.svg)](https://science.nasa.gov/mars/)
+
+<br>
+
+[![NASA Space Apps Challenge](https://img.shields.io/badge/NASA%20Space%20Apps%20Challenge-Project-111827?style=for-the-badge&logo=nasa&logoColor=white)](https://www.spaceappschallenge.org/)
+
+</div>
+
 
 A-ROUTE is an interactive Mars mapping and exploration application developed for the **NASA Space Apps Challenge 2026 – Interplanetary Survival Guide: Martian Map**. It brings terrain data, rover records, and selected science observations into one spatial interface for **Gale Crater (Curiosity)** and **Jezero Crater (Perseverance)**.
+
+<img src="./public/screenshots/Initial cover.png" alt="A-ROUTE Logo" align="center">
 
 ## Features and data use
 
@@ -10,15 +30,21 @@ A-ROUTE is an interactive Mars mapping and exploration application developed for
 - The same terrain grid is sampled to derive **elevation, slope/steepness, contours, and elevation profiles**.
 - Imagery and elevation are separate layers, so the visual surface can be viewed alongside terrain analysis.
 
+<img src="./public/screenshots/dashboard.png" alt="A-ROUTE Logo" align="center">
+
 ### Terrain inspection and route planning
 - Select a terrain point to inspect its coordinates, elevation, and derived terrain information.
 - **Fastest** and **Safest** routes are calculated over the available elevation grid using terrain-aware path costs.
 - Route results depend on editable assumptions such as slope limits and route-cost settings. They are estimates for exploration, not validated rover commands or predictions of actual mission travel time.
 
+<img src="./public/screenshots/route.png" alt="A-ROUTE Logo" align="center">
+
 ### Rover data and exploration
 - Curiosity and Perseverance traverse/waypoint records are displayed as rover paths and locations where data is available.
 - Rover panorama images are associated with their recorded locations, allowing users to view surface imagery in context.
 - Curiosity drill/sample locations and selected science records are used as spatial exploration points and mission activities. Mission content links a location to its image and scientific context; it does not represent a new analysis of the sample.
+
+<img src="./public/screenshots/game grid.png" alt="A-ROUTE Logo" align="center">
 
 ### Weather
 - **REMS** observations support Curiosity/Gale weather information.

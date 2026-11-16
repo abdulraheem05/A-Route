@@ -1,10 +1,16 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'A-ROUTE — Know the Ground',
+  title: 'A-ROUTE',
   description:
     'A cinematic, scientifically oriented Mars exploration platform. Phase 1: introduction and destination selection.',
   applicationName: 'A-ROUTE',
+
+  icons: {
+    icon: '/screenshots/A-ROUTE Icon.png',
+    shortcut: '/screenshots/A-ROUTE Icon.png',
+    apple: '/screenshots/A-ROUTE Icon.png',
+  },
 };
 
 export const viewport = {
